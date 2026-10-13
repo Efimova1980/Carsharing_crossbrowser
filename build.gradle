@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.16.1'
+    implementation group: 'org.testng', name: 'testng', version: '7.5.1'
+
+    compileOnly 'org.projectlombok:lombok:1.18.28'
+    annotationProcessor 'org.projectlombok:lombok:1.18.28'
+    testCompileOnly 'org.projectlombok:lombok:1.18.28'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+    implementation 'net.datafaker:datafaker:2.5.2'
+    implementation 'ch.qos.logback:logback-classic:1.5.18'
+}
+
+test {
+    useTestNG()
+}
+
+task smoketests(type: Test){
+    useTestNG(){
+        suites 'src/test/resources/smoketests.xml'
+    }
+}
+task test_workflow(type: Test){
+    useTestNG(){
+        suites 'src/test/resources/test_workflow.xml'
+    }
+}
+
+task regressiontests(type: Test){
+    useTestNG(){
+        suites 'src/test/resources/regressiontests.xml'
+    }
+}

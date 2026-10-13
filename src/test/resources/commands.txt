@@ -1,0 +1,10 @@
+.\gradlew clean smoketests
+.\gradlew clean smoke_contact_tests
+.\gradlew clean negativetests
+.\gradlew clean different_tests -Dsuite=smoke_contact_tests
+
+terminal computer
+run without idea
+
+cd D:\dev\IdeaProjects\QA_50_32_PhoneBook_Web_Api   enter
+D:\dev\IdeaProjects\QA_50_32_PhoneBook_Web_Api>.\gradlew clean smoketests
