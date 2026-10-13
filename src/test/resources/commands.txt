@@ -6,5 +6,5 @@
 terminal computer
 run without idea
 
-cd D:\dev\IdeaProjects\QA_50_32_PhoneBook_Web_Api   enter
-D:\dev\IdeaProjects\QA_50_32_PhoneBook_Web_Api>.\gradlew clean smoketests
+cd D:\dev\IdeaProjects\Carsharing_crossbrowser   enter
+D:\dev\IdeaProjects\Carsharing_crossbrowser>.\gradlew clean smoketests
