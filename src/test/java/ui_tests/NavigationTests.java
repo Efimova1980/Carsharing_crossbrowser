@@ -1,45 +1,46 @@
 package ui_tests;
 
-import dto.User;
 import manager.AppManager;
 import org.testng.Assert;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-import pages.BasePage;
 import pages.HomePage;
 import pages.LoginPage;
-import utils.PropertiesReader;
+import pages.PopupPage;
+import utils.ConfigReader;
 import utils.TestNGListener;
 import utils.enums.FooterMenuItem;
 import utils.enums.HeaderMenuItem;
+
+import static utils.UserFactory.userWithCredentials;
 
 @Listeners(TestNGListener.class)
 
 public class NavigationTests extends AppManager {
 
     //tests with checking titles on footer menu click
-    @Test
+    //"external": they open third-party sites (titles, cookie banners, regions change) - not in regression
+    @Test(groups = "external")
     public void iconFacebookNavigationTest(){
         Assert.assertTrue(new HomePage(getDriver())
-                .isTitlePresentOnClickIconFooter(utils.enums.FooterMenuItem.ICON_FACEBOOK, "Facebook"));
+                .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_FACEBOOK, "Facebook"));
     }
-    @Test
+    @Test(groups = "external")
     public void iconVKNavigationTest(){
         Assert.assertTrue(new HomePage(getDriver())
-                .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_VK, "ВКонтакте"));
+                .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_VK, "VK"));
     }
-    @Test
+    @Test(groups = "external")
     public void iconInstagramNavigationTest(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_INSTAGRAM, "Instagram"));
     }
-    @Test
+    @Test(groups = "external")
     public void iconSlackNavigationTest(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_SLACK, "Slack"));
     }
-    @Test
+    @Test(groups = "external")
     public void iconTelegramNavigationTest(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickIconFooter(FooterMenuItem.ICON_TELEGRAM, "Telegram"));
@@ -47,42 +48,36 @@ public class NavigationTests extends AppManager {
 
     //tests with checking titles on header menu click
 
-    @Test
+    @Test(groups = "regression")
     public void HeaderNavigationTest_Search(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickBtnHeader(HeaderMenuItem.SEARCH, "Search"));
     }
-    @Test
+    @Test(groups = "regression")
     public void HeaderNavigationTest_LoginBtn(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickBtnHeader(HeaderMenuItem.LOGIN, "Login"));
     }
-    @Test
+    @Test(groups = "regression")
     public void HeaderNavigationTest_SignUpBtn(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickBtnHeader(HeaderMenuItem.SIGN_UP, "Registration"));
     }
-    @Test
+    @Test(groups = "regression")
     public void HeaderNavigationTest_TermsOfUseBtn(){
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickBtnHeader(HeaderMenuItem.TERMS_OF_USE, "Terms of use"));
     }
 
-    @BeforeMethod(onlyForGroups = "loginRequired")
-    public void login() {
-        LoginPage loginPage = new HomePage(getDriver()).getHeader().click(HeaderMenuItem.LOGIN);
-        User user = User.builder()
-                .username(PropertiesReader.getProperty("base.properties","login"))
-                .password(PropertiesReader.getProperty("base.properties","password"))
-                .build();
-        loginPage.typeLoginForm(user);
-        loginPage.clickBtnYalla();
-    }
-
-    @Test(groups = "loginRequired")
+    // "Let the car work" is in the header only for a logged-in user
+    @Test(groups = "regression")
     public void HeaderNavigationTest_LetTheCarWorkBtn(){
+        LoginPage loginPage = new HomePage(getDriver()).getHeader().click(HeaderMenuItem.LOGIN);
+        loginPage.typeLoginForm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
+        loginPage.clickBtnYalla();
+        // wait until login is finished, otherwise HomePage may open before the user is logged in
+        new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success");
         Assert.assertTrue(new HomePage(getDriver())
                 .isTitlePresentOnClickBtnHeader(HeaderMenuItem.LET_THE_CAR_WORK, "Let the car work!"));
     }
-
 }

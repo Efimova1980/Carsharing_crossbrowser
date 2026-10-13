@@ -12,12 +12,9 @@ import java.util.Date;
 import static manager.AppManager.logger;
 
 public class TakeScreenShot {
-    public static void main(String[] args) {
-        System.out.println(createFileName());
-    }
 
-    public static void takeScreenShot(TakesScreenshot screenShot){
-        String fileName = createFileName();
+    public static void takeScreenShot(TakesScreenshot screenShot, String browser, String testName) {
+        String fileName = createFileName(browser, testName);
         File scrFile = screenShot.getScreenshotAs(OutputType.FILE);
         try {
             File dir = new File("build/screenshots");
@@ -31,13 +28,10 @@ public class TakeScreenShot {
         }
     }
 
-    private static String createFileName(){
-        SimpleDateFormat  formater = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss");
-        Date date = new Date(System.currentTimeMillis());
-        System.out.println(date);
-        String currentDate = formater.format(date);
-        System.out.println(currentDate);
-        String fileName = "build/screenshots/scr-" + currentDate + ".png";
-        return fileName;
+    // browser and test name in the file name: parallel tests don't overwrite each other's screenshots
+    private static String createFileName(String browser, String testName) {
+        SimpleDateFormat formater = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss-SSS");
+        String currentDate = formater.format(new Date(System.currentTimeMillis()));
+        return "build/screenshots/scr-" + browser + "-" + testName + "-" + currentDate + ".png";
     }
 }

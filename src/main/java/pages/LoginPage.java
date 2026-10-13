@@ -21,12 +21,11 @@ public class LoginPage extends BasePage{
     WebElement popupSuccessfullLogin;
 
     By btnYalla_locator = By.xpath("//button[@type='submit']");
-    By btnOk_locator = By.xpath("//button[@class='positive-button ng-star-inserted']");
     By email_locator = By.xpath("//input[@id='email']");
     By password_locator = By.xpath("//input[@id='password']");
 
     public void clickBtnOk(){
-        click(btnOk_locator);
+        new PopupPage(getDriver()).clickBtnOk();
     }
 
     public void clickBtnYalla(){

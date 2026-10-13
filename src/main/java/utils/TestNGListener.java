@@ -11,7 +11,6 @@ import org.testng.ITestResult;
 
 public class TestNGListener implements ITestListener {
     Logger logger = LoggerFactory.getLogger(TestNGListener.class);
-    private WebDriver driver;
 
     @Override
     public void onTestSuccess(ITestResult result) {
@@ -36,16 +35,22 @@ public class TestNGListener implements ITestListener {
         ITestListener.super.onTestFailure(result);
         logger.info("{} failed test --> {}", result.getTestClass(), result.getName());
         logger.error("Error");
-        this.driver = ((AppManager)result.getInstance()).getDriver();
-        TakeScreenShot.takeScreenShot((TakesScreenshot)driver);
+        takeScreenShot(result);
     }
 
     @Override
     public void onTestFailedWithTimeout(ITestResult result) {
         ITestListener.super.onTestFailedWithTimeout(result);
         logger.info("Test {}failed with timeout", result.getTestName());
-        this.driver = ((AppManager)result.getInstance()).getDriver();
-        TakeScreenShot.takeScreenShot((TakesScreenshot)driver);
+        takeScreenShot(result);
+    }
+
+    // listener runs in the test's thread, so AppManager returns this test's driver
+    private void takeScreenShot(ITestResult result) {
+        WebDriver driver = ((AppManager) result.getInstance()).getDriver();
+        if (driver == null)
+            return;
+        TakeScreenShot.takeScreenShot((TakesScreenshot) driver, AppManager.getBrowser(), result.getName());
     }
 
     @Override

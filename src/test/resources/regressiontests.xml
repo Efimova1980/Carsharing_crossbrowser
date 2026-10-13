@@ -3,7 +3,7 @@
     <test name="regressiontests">
         <groups>
             <run>
-                <include name="reg-regression"/>
+                <include name="regression"/>
                 <include name="smoke"/>
             </run>
         </groups>
@@ -12,6 +12,7 @@
             <class name="ui_tests.LoginTests"/>
             <class name="ui_tests.AddCarTests"/>
             <class name="ui_tests.FindYourCarTests"/>
+            <class name="ui_tests.NavigationTests"/>
         </classes>
     </test>
 </suite>

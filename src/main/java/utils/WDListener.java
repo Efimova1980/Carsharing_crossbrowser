@@ -2,6 +2,7 @@ package utils;
 
 import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.events.WebDriverListener;
@@ -18,7 +19,22 @@ public class WDListener implements WebDriverListener {
     @Override
     public void onError(Object target, Method method, Object[] args, InvocationTargetException e) {
         WebDriverListener.super.onError(target, method, args, e);
-        logger.error("created exception in method --> {}", method.getName());
+        Throwable cause = e.getTargetException();
+        // waits (WebDriverWait, AjaxElementLocator) call findElement again and again
+        // until the element appears: "not found yet" is expected there, not an error
+        if (cause instanceof NoSuchElementException) {
+            logger.debug("element not found yet in method --> {} {}", method.getName(), Arrays.toString(args));
+            return;
+        }
+        logger.error("created exception in method --> {}: {}", method.getName(),
+                cause.getClass().getSimpleName() + " " + firstLine(cause.getMessage()));
+    }
+
+    private static String firstLine(String message) {
+        if (message == null)
+            return "";
+        int end = message.indexOf('\n');
+        return end == -1 ? message : message.substring(0, end);
     }
 
     @Override

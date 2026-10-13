@@ -4,7 +4,7 @@ import enums.Months;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.PropertiesReader;
+import utils.ConfigReader;
 import utils.enums.FooterMenuItem;
 import utils.enums.HeaderMenuItem;
 
@@ -15,8 +15,7 @@ import java.time.format.DateTimeFormatter;
 public class HomePage extends BasePage {
     public HomePage(WebDriver driver) {
         super(driver);
-        driver.get("https://ilcarro.web.app/search");
-        //driver.get(PropertiesReader.getProperty("base.properties", "baseUrl"));
+        driver.get(ConfigReader.get("baseUrl") + "/search");
     }
 
     By btnYalla_locator = By.xpath("//button[@type='submit']");
@@ -33,7 +32,12 @@ public class HomePage extends BasePage {
         String dateRange = startDate.format(formatter)
                 + " - "
                 + endDate.format(formatter);
-        type(inputDates_locator, dateRange);
+        // TAB: the site validates dates only when the field loses focus
+        type(inputDates_locator, dateRange, Keys.TAB);
+    }
+
+    public boolean isBtnYallaEnabled() {
+        return isElementEnabled(getDriver().findElement(btnYalla_locator));
     }
 
     public void typeFindYourCarForm(String city, LocalDate startDate, LocalDate endDate) {

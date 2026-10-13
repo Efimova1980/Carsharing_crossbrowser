@@ -1,6 +1,7 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -29,5 +30,28 @@ public class Header {
             case LET_THE_CAR_WORK -> (T) new LetTheCarWorkPage(driver);
             default -> throw new IllegalArgumentException("Invalid parameter");
         };
+    }
+
+    // click without opening a new page: click(LOG_OUT / DELETE_ACCAUNT) reloads HomePage right away
+    // and may interrupt what the site does after the click (request, confirmation dialog)
+    public void clickWithoutNavigation(HeaderMenuItem item) {
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(item.getLocator()))).click();
+    }
+
+    public boolean isItemDisplayed(HeaderMenuItem item) {
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(item.getLocator())));
+            return true;
+        } catch (TimeoutException e) {
+            return false;
+        }
+    }
+
+    public boolean isItemNotDisplayed(HeaderMenuItem item) {
+        try {
+            return wait.until(ExpectedConditions.invisibilityOfElementLocated(By.xpath(item.getLocator())));
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 }

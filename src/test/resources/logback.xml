@@ -4,22 +4,41 @@
        available to all subsequent configuration elements. -->
     <timestamp key="bySecond" datePattern="yyyyMMdd'T'HHmmss"/>
 
+    <!-- [%X{browser}] - browser of the current test (set in AppManager), to separate parallel runs -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">  <!-- console output -->
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{browser}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
+    <!-- all browsers in one file, in time order -->
     <appender name="FILE" class="ch.qos.logback.core.FileAppender"> <!--input to file-->
-        <file>src/test/resources/test_log/log-${bySecond}.log</file>
-        <maxHistory>5</maxHistory>  <!-- keep log file 5 days -->
+        <file>build/logs/log-${bySecond}.log</file>
         <encoder>
-            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] [%X{browser}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
+    </appender>
+
+    <!-- separate file for each browser: log-<time>-chrome.log, log-<time>-firefox.log ...
+         lines logged outside of a test (no browser in MDC) go to log-<time>-common.log -->
+    <appender name="FILE_BY_BROWSER" class="ch.qos.logback.classic.sift.SiftingAppender">
+        <discriminator>
+            <key>browser</key>
+            <defaultValue>common</defaultValue>
+        </discriminator>
+        <sift>
+            <appender name="FILE-${browser}" class="ch.qos.logback.core.FileAppender">
+                <file>build/logs/log-${bySecond}-${browser}.log</file>
+                <encoder>
+                    <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </sift>
     </appender>
 
     <root level="info"> <!-- levels logging     off/error/warning/info/debug/trace  -->
         <appender-ref ref="FILE" />
+        <appender-ref ref="FILE_BY_BROWSER" />
         <appender-ref ref="STDOUT" />
     </root>
 </configuration>

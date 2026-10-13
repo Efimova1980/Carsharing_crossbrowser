@@ -12,11 +12,12 @@ import pages.LetTheCarWorkPage;
 import pages.LoginPage;
 import pages.PopupPage;
 import utils.CarFactory;
-import utils.PropertiesReader; //for local tests
+import utils.ConfigReader;
 import utils.TestNGListener;
 import utils.enums.HeaderMenuItem;
 
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 
 @Listeners(TestNGListener.class)
 
@@ -30,23 +31,15 @@ public class AddCarTests extends AppManager {
     public void login(Method method) {
         homePage = new HomePage(getDriver());
         loginPage = homePage.getHeader().click(HeaderMenuItem.LOGIN);
-        /*
-        //FOR LOCAL TESTS NOT GITHUB REMOTE TESTS
         User user = User.builder()
-                .username(PropertiesReader.getProperty("base.properties", "login"))
-                .password(PropertiesReader.getProperty("base.properties", "password"))
-                .build();
-        */
-        User user = User.builder()
-                .username("harry@gmail.com")
-                .password("Pass1234!")
+                .username(ConfigReader.get("login"))
+                .password(ConfigReader.get("password"))
                 .build();
 
         logger.info("start test " + method.getName() + " with " + user);
         loginPage.typeLoginForm(user);
         loginPage.clickBtnYalla();
         loginPage.clickBtnOk();
-        //loginPage.pause(2);
         letTheCarWorkPage = loginPage.getHeader().click(HeaderMenuItem.LET_THE_CAR_WORK);
     }
 
@@ -54,14 +47,12 @@ public class AddCarTests extends AppManager {
     public void AddNewCarPositiveTest(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
-        //letTheCarWorkPage.typeImage(car.getImage());
         letTheCarWorkPage.clickBtnSubmit_WithJS();
-        //Assert.assertTrue(letTheCarWorkPage.isButtonSubmitEnabled());
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("must not be blank"));
     }
 
     //add car negative tests
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_LocationEmpty(){
         Car car = CarFactory.positiveCar();
         car.setCity("");
@@ -69,7 +60,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong address"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_ManufactureEmpty(){
         Car car = CarFactory.positiveCar();
         car.setManufacture("");
@@ -77,7 +68,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Make is required"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_ModelEmpty(){
         Car car = CarFactory.positiveCar();
         car.setModel("");
@@ -85,7 +76,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Model is required"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_YearEmpty(){
         Car car = CarFactory.positiveCar();
         car.setYear("");
@@ -93,7 +84,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Year required"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_YearNegative(){
         Car car = CarFactory.positiveCar();
         car.setYear("-1");
@@ -101,22 +92,22 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong year"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_YearAfterNow(){
         Car car = CarFactory.positiveCar();
-        car.setYear("2027");
+        car.setYear(Integer.toString(LocalDate.now().getYear() + 1));
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong year"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsEmpty(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
         letTheCarWorkPage.typeSeats("");
         Assert.assertTrue(homePage.isTextInErrorPresent("Number of seats is required"));
     }
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsLessThanTwo(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
@@ -124,7 +115,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car must have min 2 seat"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsNegative(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
@@ -132,7 +123,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car must have min 2 seat"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsMoreTwenty(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
@@ -140,7 +131,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("To much seats"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_CarClassEmpty(){
         Car car = CarFactory.positiveCar();
         car.setCarClass("");
@@ -148,7 +139,7 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car class is required"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_CarRegistrationNumberEmpty(){
         Car car = CarFactory.positiveCar();
         car.setSerialNumber("");
@@ -156,21 +147,21 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car registration number is required"));
     }
 
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_PriceEmpty(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
         letTheCarWorkPage.typePrice("");
         Assert.assertTrue(homePage.isTextInErrorPresent("Price is required"));
     }
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_PriceNegative(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);
         letTheCarWorkPage.typePrice("-0,01");
         Assert.assertTrue(homePage.isTextInErrorPresent("Price must be positive"));
     }
-    @Test
+    @Test(groups = "regression")
     public void AddNewNegativeTest_PriceMoreThanOneThousand(){
         Car car = CarFactory.positiveCar();
         letTheCarWorkPage.typeLetTheCarWorkForm(car);

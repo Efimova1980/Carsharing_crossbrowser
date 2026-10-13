@@ -44,9 +44,11 @@ public class RegistrationPage extends BasePage{
     public void setCheckBoxAgree_WithActions(boolean value){
         int x = checkBoxAgreeLabel.getSize().width;
 
+        // offset is from the label's center; +5 keeps the click inside the label
+        // (exactly on the edge Firefox misses the checkbox)
         if (checkBoxAgreeInput.isSelected() != value)
             new Actions(getDriver())
-                    .moveToElement(checkBoxAgreeLabel, -x/2 , 0)
+                    .moveToElement(checkBoxAgreeLabel, -x/2 + 5, 0)
                     .click()
                     .perform();
     }

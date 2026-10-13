@@ -10,16 +10,35 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.16.1'
-    implementation group: 'org.testng', name: 'testng', version: '7.5.1'
+    // keep in sync with the Selenium Grid version in docker-compose
+    implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.49.0'
+    implementation group: 'org.testng', name: 'testng', version: '7.12.0'
 
-    compileOnly 'org.projectlombok:lombok:1.18.28'
-    annotationProcessor 'org.projectlombok:lombok:1.18.28'
-    testCompileOnly 'org.projectlombok:lombok:1.18.28'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.28'
+    compileOnly 'org.projectlombok:lombok:1.18.48'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    testCompileOnly 'org.projectlombok:lombok:1.18.48'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
 
-    implementation 'net.datafaker:datafaker:2.5.2'
+    implementation 'net.datafaker:datafaker:2.7.0'
     implementation 'ch.qos.logback:logback-classic:1.5.18'
+}
+
+// settings passed to tests from the command line, e.g.
+// .\gradlew crossbrowser -DgridUrl=http://localhost:4444
+def configKeys = ['browser', 'gridUrl', 'baseUrl', 'headless', 'login', 'password']
+
+tasks.withType(Test).configureEach {
+    configKeys.each { key ->
+        def value = System.getProperty(key)
+        if (value != null) {
+            systemProperty key, value
+        }
+    }
+    // UI tests depend on the site, not only on the code: always run them
+    outputs.upToDateWhen { false }
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
 }
 
 test {
@@ -31,14 +50,15 @@ task smoketests(type: Test){
         suites 'src/test/resources/smoketests.xml'
     }
 }
-task test_workflow(type: Test){
-    useTestNG(){
-        suites 'src/test/resources/test_workflow.xml'
-    }
-}
 
 task regressiontests(type: Test){
     useTestNG(){
         suites 'src/test/resources/regressiontests.xml'
+    }
+}
+
+task crossbrowser(type: Test){
+    useTestNG(){
+        suites 'src/test/resources/crossbrowser.xml'
     }
 }
