@@ -42,23 +42,33 @@ tasks.withType(Test).configureEach {
 }
 
 test {
-    useTestNG()
+    // all test classes at the same time (inside a class tests run one by one)
+    useTestNG {
+        parallel = 'classes'
+        threadCount = 5
+    }
 }
 
-task smoketests(type: Test){
-    useTestNG(){
+tasks.register('smoketests', Test) {
+    useTestNG() {
         suites 'src/test/resources/smoketests.xml'
     }
 }
 
-task regressiontests(type: Test){
-    useTestNG(){
+tasks.register('regressiontests', Test) {
+    useTestNG() {
         suites 'src/test/resources/regressiontests.xml'
     }
 }
 
-task crossbrowser(type: Test){
-    useTestNG(){
+tasks.register('crossbrowser', Test) {
+    useTestNG() {
         suites 'src/test/resources/crossbrowser.xml'
+    }
+}
+
+tasks.register('crossbrowser_regression', Test) {
+    useTestNG() {
+        suites 'src/test/resources/crossbrowser_regression.xml'
     }
 }

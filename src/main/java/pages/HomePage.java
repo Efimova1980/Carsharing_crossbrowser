@@ -22,9 +22,24 @@ public class HomePage extends BasePage {
     By inputDates_locator = By.xpath("//input[@id='dates']");
     By inputCity_locator = By.xpath("//input[@id='city']");
     By btnChooseMonthYear_locator = By.xpath("//button[@aria-label='Choose month and year']");
+    By btnGoogleMapsOk_locator = By.cssSelector("button.dismissButton");
 
     public void clickBtnYalla() {
+        closeGoogleMapsErrorIfVisible();
         click(btnYalla_locator);
+    }
+
+    // the site can't load Google Maps: after a city is typed Google shows
+    // "This page can't load Google Maps correctly" over Dates and Yalla.
+    // The dialog appears with a delay, so wait for it a little; if it is shown - press OK
+    public void closeGoogleMapsErrorIfVisible() {
+        try {
+            new WebDriverWait(getDriver(), Duration.ofSeconds(3))
+                    .until(ExpectedConditions.elementToBeClickable(btnGoogleMapsOk_locator))
+                    .click();
+        } catch (TimeoutException e) {
+            // no dialog - nothing to close
+        }
     }
 
     public void setDateRange(LocalDate startDate, LocalDate endDate) {
@@ -32,8 +47,7 @@ public class HomePage extends BasePage {
         String dateRange = startDate.format(formatter)
                 + " - "
                 + endDate.format(formatter);
-        // TAB: the site validates dates only when the field loses focus
-        type(inputDates_locator, dateRange, Keys.TAB);
+        type(inputDates_locator, dateRange);
     }
 
     public boolean isBtnYallaEnabled() {
@@ -51,6 +65,9 @@ public class HomePage extends BasePage {
     public void typeFindYourCarForm_WOJavascript(String city, LocalDate startDate, LocalDate endDate) {
         type(inputCity_locator, city);
         setDateRange(startDate, endDate);
+        // TAB: the site shows date errors only when the field loses focus
+        // (not in the positive flow: TAB scrolls the page and Yalla goes out of view)
+        getDriver().findElement(inputDates_locator).sendKeys(Keys.TAB);
     }
 
     //CALENDAR--------------------------------------------------
@@ -96,6 +113,7 @@ public class HomePage extends BasePage {
 
     public void typeFindYourCarFormWithCalandar(String city, LocalDate startDate, LocalDate endDate) {
         type(inputCity_locator, city);
+        closeGoogleMapsErrorIfVisible();   // otherwise the dialog may cover Dates
         click(inputDates_locator);
         typeCalendar(startDate);
         typeCalendar(endDate);
