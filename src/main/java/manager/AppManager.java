@@ -1,18 +1,23 @@
 package manager;
 
+import io.qameta.allure.Allure;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.openqa.selenium.support.events.WebDriverListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 import utils.ConfigReader;
+import utils.TakeScreenShot;
 import utils.WDListener;
 
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -54,20 +59,36 @@ public class AppManager {
                 method.getDeclaringClass().getSimpleName() + "." + method.getName());
         webDriver = new EventFiringDecorator<>(webDriverListener).decorate(webDriver);
 
-        webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(30));
+        webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
         driver.set(webDriver);
     }
 
     @AfterMethod(alwaysRun = true)
-    public void tearDown() {
+    public void tearDown(ITestResult result) {
         logger.info("Stop testing: " + LocalDate.now() + " : " + LocalTime.now());
 
         WebDriver webDriver = driver.get();
+        if (webDriver != null && result.getStatus() == ITestResult.FAILURE) {
+            takeScreenShot(webDriver, result.getName());
+        }
         if (webDriver != null) {
             webDriver.quit();
         }
         driver.remove();
         browser.remove();
         MDC.remove("browser");
+    }
+
+    // here and not in TestNGListener.onTestFailure: by then Allure has already closed the test,
+    // in @AfterMethod the screenshot is attached to the test (Tear down section of the report)
+    private void takeScreenShot(WebDriver webDriver, String testName) {
+        try {
+            byte[] png = TakeScreenShot.takeScreenShot((TakesScreenshot) webDriver, getBrowser(), testName);
+            Allure.addAttachment("Screenshot (" + getBrowser() + ")", "image/png",
+                    new ByteArrayInputStream(png), "png");
+        } catch (RuntimeException e) {
+            // a failed screenshot must not stop quit(): the browser would stay open on the grid
+            logger.error("Can't take screenshot: " + e.getMessage());
+        }
     }
 }

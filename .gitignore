@@ -20,6 +20,10 @@ src/test/properties
 src/main/resources/config.properties
 src/test/resources/test_log
 
+### Allure ###
+allure-results/
+allure-report/
+
 ### Eclipse ###
 .apt_generated
 .classpath

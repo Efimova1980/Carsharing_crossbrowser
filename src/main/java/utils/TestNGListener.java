@@ -1,8 +1,5 @@
 package utils;
 
-import manager.AppManager;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
@@ -35,22 +32,13 @@ public class TestNGListener implements ITestListener {
         ITestListener.super.onTestFailure(result);
         logger.info("{} failed test --> {}", result.getTestClass(), result.getName());
         logger.error("Error");
-        takeScreenShot(result);
+        // screenshot is taken in AppManager.tearDown (so that it gets into the Allure report)
     }
 
     @Override
     public void onTestFailedWithTimeout(ITestResult result) {
         ITestListener.super.onTestFailedWithTimeout(result);
         logger.info("Test {}failed with timeout", result.getTestName());
-        takeScreenShot(result);
-    }
-
-    // listener runs in the test's thread, so AppManager returns this test's driver
-    private void takeScreenShot(ITestResult result) {
-        WebDriver driver = ((AppManager) result.getInstance()).getDriver();
-        if (driver == null)
-            return;
-        TakeScreenShot.takeScreenShot((TakesScreenshot) driver, AppManager.getBrowser(), result.getName());
     }
 
     @Override

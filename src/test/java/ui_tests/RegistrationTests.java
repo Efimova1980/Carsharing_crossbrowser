@@ -1,5 +1,10 @@
 package ui_tests;
 import dto.User;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
 import manager.AppManager;
 import org.openqa.selenium.WebDriver;
 import org.testng.Assert;
@@ -15,6 +20,9 @@ import static utils.UserFactory.*;
 
 @Listeners(TestNGListener.class)
 
+@Epic("User account")
+@Feature("Registration")
+@Severity(SeverityLevel.NORMAL)
 public class RegistrationTests extends AppManager {
     RegistrationPage registrationPage;
 
@@ -27,6 +35,8 @@ public class RegistrationTests extends AppManager {
     }
 
     //----------------------------------POSITIVE TESTS-------------------------------------
+    @Severity(SeverityLevel.BLOCKER)
+    @Story("Successful registration")
     @Test(groups = "smoke")
     public void registrationPositiveTest(){
         User user = positiveUser();
@@ -39,6 +49,7 @@ public class RegistrationTests extends AppManager {
 
     //--------------------------------NEGATIVE TESTS-------------------------------------
 
+    @Story("Required fields")
     @Test(groups = "regression")
     public void registrationNegativeTest_EmptyFields(){
         SoftAssert softAssert = new SoftAssert();
@@ -57,6 +68,8 @@ public class RegistrationTests extends AppManager {
         softAssert.assertAll();
     }
 
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Already registered user")
     @Test(groups = "regression")
     public void registrationNegativeTest_UserAlreadyExists(){
         User user = existingUser();
@@ -66,6 +79,7 @@ public class RegistrationTests extends AppManager {
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("User already exists"));
     }
 
+    @Story("Terms of use agreement")
     @Test(groups = "regression")
     public void registrationNegativeTest_NoCheckboxAgree(){
         User user = positiveUser();
@@ -91,6 +105,7 @@ public class RegistrationTests extends AppManager {
         };
     }
 
+    @Story("Password validation")
     @Test(groups = "regression", dataProvider = "invalidPasswords")
     public void registrationNegativeTest_InvalidPassword(String password, String expectedError){
         User user = positiveUser();
@@ -144,6 +159,7 @@ public class RegistrationTests extends AppManager {
         };
     }
 
+    @Story("Email validation")
     @Test(groups = "regression", dataProvider = "invalidEmails")
     public void registrationNegativeTest_InvalidEmail(String email, String expectedError){
         User user = positiveUser();

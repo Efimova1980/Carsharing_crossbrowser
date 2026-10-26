@@ -1,7 +1,7 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <!-- Each <test> runs in its own browser; parallel="tests" runs the browsers at the same time.
      thread-count = how many browsers work simultaneously (not more than free slots in the grid). -->
-<suite name="crossbrowser" verbose="1" parallel="tests" thread-count="3">
+<suite name="crossbrowser" verbose="1" parallel="tests" thread-count="3" configfailurepolicy="continue">
     <test name="chrome">
         <parameter name="browser" value="chrome"/>
         <groups>

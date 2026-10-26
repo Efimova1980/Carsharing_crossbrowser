@@ -1,6 +1,11 @@
 package ui_tests;
 
 import dto.User;
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
 import manager.AppManager;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -20,6 +25,9 @@ import static utils.UserFactory.positiveUser;
 import static utils.UserFactory.userWithCredentials;
 @Listeners(TestNGListener.class)
 
+@Epic("User account")
+@Feature("Login and logout")
+@Severity(SeverityLevel.CRITICAL)
 public class LoginTests extends AppManager {
     LoginPage loginPage;
 
@@ -29,6 +37,8 @@ public class LoginTests extends AppManager {
     }
 
     //------------------LOGIN POSITIVE TESTS----------------------------
+    @Severity(SeverityLevel.BLOCKER)
+    @Story("Successful login")
     @Test(groups = "smoke")
     public void loginPositiveTest(){
         User user = userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
@@ -38,6 +48,7 @@ public class LoginTests extends AppManager {
     }
 
     // email is not case-sensitive: HARRY@GMAIL.COM is the same user as harry@gmail.com
+    @Story("Successful login")
     @Test(groups = "regression")
     public void loginPositiveTest_EmailInUpperCase(){
         User user = userWithCredentials(ConfigReader.get("login").toUpperCase(), ConfigReader.get("password"));
@@ -47,13 +58,15 @@ public class LoginTests extends AppManager {
     }
 
     //------------------LOGOUT----------------------------
+    @Story("Logout")
     @Test(groups = "regression")
     public void logoutTest(){
         SoftAssert softAssert = new SoftAssert();
         loginPage.typeLoginForm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
         loginPage.clickBtnYalla();
         PopupPage popupPage = new PopupPage(getDriver());
-        popupPage.isTextInPopupMessagePresent("Logged in success");
+        Assert.assertTrue(popupPage.isTextInPopupMessagePresent("Logged in success"),
+                "precondition: login succeeded");
         popupPage.clickBtnOk();
 
         Header header = loginPage.getHeader();
@@ -82,6 +95,7 @@ public class LoginTests extends AppManager {
         };
     }
 
+    @Story("Wrong credentials")
     @Test(groups = "regression", dataProvider = "wrongCredentials")
     public void loginNegativeTest_WrongCredentials(String caseName, String login, String password){
         loginPage.typeLoginForm(userWithCredentials(login, password));
@@ -109,6 +123,8 @@ public class LoginTests extends AppManager {
         };
     }
 
+    @Severity(SeverityLevel.NORMAL)
+    @Story("Login form validation")
     @Test(groups = "regression", dataProvider = "invalidLoginForm")
     public void loginNegativeTest_InvalidForm(String caseName, String login, String password, String[] expectedErrors){
         SoftAssert softAssert = new SoftAssert();

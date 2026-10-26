@@ -1,5 +1,10 @@
 package ui_tests;
 
+import io.qameta.allure.Epic;
+import io.qameta.allure.Feature;
+import io.qameta.allure.Severity;
+import io.qameta.allure.SeverityLevel;
+import io.qameta.allure.Story;
 import manager.AppManager;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -14,6 +19,9 @@ import java.time.LocalDate;
 
 @Listeners(TestNGListener.class)
 
+@Epic("Car rental")
+@Feature("Find car")
+@Severity(SeverityLevel.NORMAL)
 public class FindYourCarTests extends AppManager {
     HomePage homePage;
 
@@ -22,6 +30,8 @@ public class FindYourCarTests extends AppManager {
         homePage= new HomePage(getDriver());
     }
 
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Search by city and dates")
     @Test(groups = "smoke")
     public void findYourCarPositiveTest(){
         String city = "Rehovot";
@@ -34,6 +44,8 @@ public class FindYourCarTests extends AppManager {
 
     //HOMEWORK10
     //with calendar
+    @Severity(SeverityLevel.CRITICAL)
+    @Story("Dates from calendar")
     @Test(groups = "regression")
     public void findYourCarPositiveTestWithCalandar(){
         String city = "Rehovot";
@@ -62,6 +74,7 @@ public class FindYourCarTests extends AppManager {
         };
     }
 
+    @Story("Search form validation")
     @Test(groups = "regression", dataProvider = "invalidSearchData")
     public void findYourCarNegativeTest(String caseName, String city, LocalDate startDate, LocalDate endDate,
                                         String[] expectedErrors) {

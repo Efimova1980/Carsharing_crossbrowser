@@ -97,8 +97,14 @@ public abstract class BasePage {
         return element.isDisplayed();
     }
 
+    // false (not TimeoutException) when the text didn't appear: the test fails on its assert,
+    // and Allure shows it as a product defect, not a broken test
     protected boolean isTextInElementPresentWait(WebElement element, String text){
-        return wait.until(ExpectedConditions.textToBePresentInElement(element,text));
+        try {
+            return wait.until(ExpectedConditions.textToBePresentInElement(element, text));
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     protected boolean isElementEnabled(WebElement element){

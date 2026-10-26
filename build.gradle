@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.qameta.allure' version '4.3.0'
 }
 
 group = 'org.example'
@@ -21,6 +22,21 @@ dependencies {
 
     implementation 'net.datafaker:datafaker:2.7.0'
     implementation 'ch.qos.logback:logback-classic:1.5.18'
+
+    // Allure: TestNG listener writes results to build/allure-results; Allure API for screenshots in TestNGListener
+    implementation 'io.qameta.allure:allure-testng:2.35.5'
+}
+
+// Allure report: .\gradlew allureServe (opens in browser) or .\gradlew allureReport
+// (build/reports/allure-report/allureReport/index.html). Run tests first.
+allure {
+    version = '2.46.1'              // Allure 2 report (Java, no Node.js needed)
+    adapter {
+        allureJavaVersion = '2.35.5'
+        aspectjVersion = '1.9.25'
+        aspectjWeaver = true        // for @Step and @Attachment
+        autoconfigure = true
+    }
 }
 
 // settings passed to tests from the command line, e.g.

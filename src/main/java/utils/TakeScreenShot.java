@@ -13,19 +13,21 @@ import static manager.AppManager.logger;
 
 public class TakeScreenShot {
 
-    public static void takeScreenShot(TakesScreenshot screenShot, String browser, String testName) {
+    // saves the screenshot to build/screenshots and returns it (for the Allure report)
+    public static byte[] takeScreenShot(TakesScreenshot screenShot, String browser, String testName) {
         String fileName = createFileName(browser, testName);
-        File scrFile = screenShot.getScreenshotAs(OutputType.FILE);
+        byte[] png = screenShot.getScreenshotAs(OutputType.BYTES);
         try {
             File dir = new File("build/screenshots");
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            Files.copy(scrFile.toPath(), new File(fileName).toPath());
+            Files.write(new File(fileName).toPath(), png);
             logger.info("Screenshot saved to: " + fileName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return png;
     }
 
     // browser and test name in the file name: parallel tests don't overwrite each other's screenshots
