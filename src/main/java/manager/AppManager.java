@@ -40,26 +40,43 @@ public class AppManager {
     }
 
     /**
+     * Opens a new browser before every test.
+     *
      * @param browserParam value of {@code <parameter name="browser">} from the TestNG suite;
-     *                     if absent, -Dbrowser / BROWSER / config.properties is used
+     *                     if absent, -Dbrowser / config.properties is used
+     * @param method       the test that is about to run (TestNG passes it in)
      */
     @BeforeMethod(alwaysRun = true)
     @Parameters("browser")
     public void setup(@Optional String browserParam, Method method) {
 
+        // ===== 1. MAIN: choose the browser =====
+        // suite parameter (crossbrowser*.xml) wins; otherwise -Dbrowser or config.properties
         String browserName = browserParam != null ? browserParam :
                 ConfigReader.get("browser", "chrome");
+        // remember it for this thread: used in screenshot names (tearDown)
         browser.set(browserName);
 
+        // ===== 2. SERVICE: logging =====
+        // every log line of this thread gets [browser] (logback.xml) and goes to log-...-<browser>.log
         MDC.put("browser", browserName);
         logger.info("Start testing: " + LocalDate.now() + " : " + LocalTime.now());
 
-        WebDriverListener webDriverListener = new WDListener();
+        // ===== 3. MAIN: create the driver =====
+        // local browser or RemoteWebDriver on Selenium Grid (when gridUrl is set) - see DriverFactory;
+        // the test name is only a label for the session in the Grid UI
         WebDriver webDriver = DriverFactory.createDriver(browserName,
                 method.getDeclaringClass().getSimpleName() + "." + method.getName());
+
+        // ===== 4. SERVICE: log driver actions =====
+        // wrapper around the driver: WDListener writes clicks, typing, page opens to the log
+        WebDriverListener webDriverListener = new WDListener();
         webDriver = new EventFiringDecorator<>(webDriverListener).decorate(webDriver);
 
+        // ===== 5. MAIN: driver settings and storing =====
+        // max time to wait for a page to load (an upper limit, not a pause)
         webDriver.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(60));
+        // the driver of this thread: getDriver() in tests and pages returns it
         driver.set(webDriver);
     }
 
