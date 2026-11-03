@@ -154,6 +154,9 @@ Every Grid session is named after the test (`ClassName.testName`), so it is easy
 
 ## Reports and logs
 
+**Example report:** [Allure report of a cross-browser regression run on Selenium Grid](https://efimova1980.github.io/Carsharing_crossbrowser/allure-report/)
+(Chrome, Firefox, Edge; screenshots are not included).
+
 | What         | Where                                                        |
 |--------------|--------------------------------------------------------------|
 | Allure report | `.\gradlew allureServe` (opens in the browser) or `.\gradlew allureReport` → `build/reports/allure-report/allureReport/index.html` |

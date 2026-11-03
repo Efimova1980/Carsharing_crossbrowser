@@ -23,6 +23,8 @@ src/test/resources/test_log
 ### Allure ###
 allure-results/
 allure-report/
+# published example report (GitHub Pages)
+!docs/allure-report/
 
 ### Eclipse ###
 .apt_generated
