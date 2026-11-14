@@ -25,6 +25,12 @@ dependencies {
 
     // Allure: TestNG listener writes results to build/allure-results; Allure API for screenshots in TestNGListener
     implementation 'io.qameta.allure:allure-testng:2.35.5'
+
+    // API tests: REST Assured HTTP client + Jackson for POJO <-> JSON
+    implementation 'io.rest-assured:rest-assured:5.5.7'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
+    // attaches request/response of every API call to the Allure report
+    implementation 'io.qameta.allure:allure-rest-assured:2.35.5'
 }
 
 // Allure report: .\gradlew allureServe (opens in browser) or .\gradlew allureReport
@@ -41,7 +47,7 @@ allure {
 
 // settings passed to tests from the command line, e.g.
 // .\gradlew crossbrowser -DgridUrl=http://localhost:4444
-def configKeys = ['browser', 'gridUrl', 'baseUrl', 'headless', 'login', 'password']
+def configKeys = ['browser', 'gridUrl', 'baseUrl', 'headless', 'login', 'password', 'apiUrl']
 
 tasks.withType(Test).configureEach {
     configKeys.each { key ->
@@ -86,5 +92,13 @@ tasks.register('crossbrowser', Test) {
 tasks.register('crossbrowser_regression', Test) {
     useTestNG() {
         suites 'src/test/resources/crossbrowser_regression.xml'
+    }
+}
+
+// API tests: no browser and no Grid needed, run sequentially
+// (the duplicate-registration test must stay deterministic)
+tasks.register('apitests', Test) {
+    useTestNG() {
+        suites 'src/test/resources/apitests.xml'
     }
 }

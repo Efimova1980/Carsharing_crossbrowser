@@ -1,8 +1,9 @@
 # Carsharing cross-browser UI tests
 
-Automated UI tests for a carsharing web app.
-The tests run in **Chrome, Firefox and Edge**, in parallel, either locally or on a
-remote **Selenium Grid** in Docker. Results are shown in an **Allure** report.
+Automated UI and API tests for a carsharing web app.
+The UI tests run in **Chrome, Firefox and Edge**, in parallel, either locally or on a
+remote **Selenium Grid** in Docker. The API tests call the site's REST backend directly,
+no browser needed. Results are shown in an **Allure** report.
 
 ## Tech stack
 
@@ -11,6 +12,7 @@ remote **Selenium Grid** in Docker. Results are shown in an **Allure** report.
 | Language       | Java 21                                                  |
 | Build          | Gradle 8.14 (wrapper included)                           |
 | Browser driver | Selenium 4.49 (WebDriver, RemoteWebDriver)               |
+| API client     | REST Assured 5.5 + Jackson (requests/responses in Allure) |
 | Test runner    | TestNG 7.12 (suites, groups, data providers, parallel)   |
 | Grid           | Selenium Grid 4 in Docker (hub + Chrome/Firefox/Edge)    |
 | Report         | Allure 2                                                 |
@@ -29,17 +31,24 @@ src/main/java
 │   ├── AppManager.java      # opens/closes the browser for every test, one driver per thread
 │   └── DriverFactory.java   # local driver or RemoteWebDriver on the Grid
 ├── pages/                   # Page Objects (HomePage, LoginPage, RegistrationPage, ...)
+├── api/                     # REST layer: BaseApi (config, base spec), Endpoints (all paths)
+│   │                        # + controllers as in Swagger (AuthenticationController, CarController)
+│   └── dto/                 # API request/response models, named as the Swagger schemas
+│                            # (SearchDto, TokenDto, CarsDto, CarDto)
 ├── dto/                     # test data models (User, Car)
 ├── enums/                   # Fuel, Months
 └── utils/                   # ConfigReader, UserFactory, CarFactory, listeners, screenshots
 src/main/resources
 └── config.properties        # default settings (not in git, see below)
-src/test/java/ui_tests       # test classes
+src/test/java
+├── ui_tests/                # UI test classes
+└── api_tests/               # API test classes (no browser)
 src/test/resources
 ├── smoketests.xml               # smoke, one browser
 ├── regressiontests.xml          # smoke + regression, one browser
 ├── crossbrowser.xml             # smoke, 3 browsers in parallel
 ├── crossbrowser_regression.xml  # smoke + regression, 3 browsers in parallel
+├── apitests.xml                 # API tests, no browser
 ├── logback.xml
 └── allure.properties
 docker-compose.yml           # Selenium Grid: hub + 3 browser nodes
@@ -55,10 +64,18 @@ docker-compose.yml           # Selenium Grid: hub + 3 browser nodes
 | `FindYourCarTests`  | car search: positive, calendar, invalid search data                   |
 | `NavigationTests`   | header menu, "Let the car work", social network links                 |
 
-Groups: `smoke`, `regression`, `external` (links to other sites).
+API tests (call the site's REST backend directly, endpoints taken from the site's frontend):
+
+| Class                           | What is tested                                             |
+|---------------------------------|------------------------------------------------------------|
+| `AuthenticationControllerTests` | registration: positive, duplicate user, invalid emails and passwords (data providers), blank password; login: token in the answer, wrong credentials |
+| `CarControllerTests`            | search by city and dates, blank city, empty body, invalid date range; adding a car with a Bearer token, missing field, no/invalid token |
+
+Groups: `smoke`, `regression`, `external` (links to other sites), `api`, `api_smoke`.
 
 > Some tests fail **on purpose**: they show real bugs of the site
-> (e.g. an email with a Cyrillic domain is accepted, login is case-sensitive to the email).
+> (e.g. an email with a Cyrillic domain is accepted, login is case-sensitive to the email,
+> the backend accepts a search with the end date before the start date).
 > They are kept in the regression to keep the bugs visible.
 
 ## Setup
@@ -69,6 +86,7 @@ Groups: `smoke`, `regression`, `external` (links to other sites).
 
    ```properties
    baseUrl=https://<site-under-test>
+   apiUrl=https://<rest-backend-of-the-site>
    browser=chrome
    # empty = run locally; http://localhost:4444 = run on Selenium Grid
    gridUrl=
@@ -90,6 +108,7 @@ wins over `config.properties`:
 | `baseUrl`  | site under test                                 |
 | `headless` | `true` = run browsers without a window          |
 | `login`, `password` | an existing user of the site           |
+| `apiUrl`   | REST backend of the site, used by the API tests |
 
 In the cross-browser suites the browser comes from the suite file (`<parameter name="browser">`).
 
@@ -104,6 +123,7 @@ On Windows use `.\gradlew`, on Linux/macOS `./gradlew`.
 | `.\gradlew regressiontests`              | smoke + regression, one browser               |
 | `.\gradlew crossbrowser`                 | smoke in Chrome, Firefox and Edge in parallel |
 | `.\gradlew crossbrowser_regression`      | everything in 3 browsers in parallel          |
+| `.\gradlew apitests`                     | API tests (no browser and no Grid needed)     |
 
 Examples:
 

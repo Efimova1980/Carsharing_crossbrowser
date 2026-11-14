@@ -59,7 +59,7 @@ public class AppManager {
 
         // ===== 2. SERVICE: logging =====
         // every log line of this thread gets [browser] (logback.xml) and goes to log-...-<browser>.log
-        MDC.put("browser", browserName);
+        MDC.put("logName", browserName);
         logger.info("Start testing: " + LocalDate.now() + " : " + LocalTime.now());
 
         // ===== 3. MAIN: create the driver =====
@@ -93,7 +93,7 @@ public class AppManager {
         }
         driver.remove();
         browser.remove();
-        MDC.remove("browser");
+        MDC.remove("logName");
     }
 
     // here and not in TestNGListener.onTestFailure: by then Allure has already closed the test,
