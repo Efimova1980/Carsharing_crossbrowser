@@ -1,4 +1,4 @@
-# Carsharing cross-browser UI tests
+# Carsharing cross-browser UI and API tests
 
 Automated UI and API tests for a carsharing web app.
 The UI tests run in **Chrome, Firefox and Edge**, in parallel, either locally or on a
@@ -13,6 +13,7 @@ no browser needed. Results are shown in an **Allure** report.
 | Build          | Gradle 8.14 (wrapper included)                           |
 | Browser driver | Selenium 4.49 (WebDriver, RemoteWebDriver)               |
 | API client     | REST Assured 5.5 + Jackson (requests/responses in Allure) |
+| API contract   | JSON Schema (networknt json-schema-validator), schemas from the backend Swagger |
 | Test runner    | TestNG 7.12 (suites, groups, data providers, parallel)   |
 | Grid           | Selenium Grid 4 in Docker (hub + Chrome/Firefox/Edge)    |
 | Report         | Allure 2                                                 |
@@ -32,12 +33,13 @@ src/main/java
 │   └── DriverFactory.java   # local driver or RemoteWebDriver on the Grid
 ├── pages/                   # Page Objects (HomePage, LoginPage, RegistrationPage, ...)
 ├── api/                     # REST layer: BaseApi (config, base spec), Endpoints (all paths)
-│   │                        # + controllers as in Swagger (AuthenticationController, CarController)
-│   └── dto/                 # API request/response models, named as the Swagger schemas
-│                            # (SearchDto, TokenDto, CarsDto, CarDto)
-├── dto/                     # test data models (User, Car)
+│                            # + controllers as in Swagger (AuthenticationController, CarController)
+├── dto/                     # data models named and built as the backend Swagger schemas
+│                            # (RegistrationBodyDto, AuthenticationBodyDto, CarDto, SearchDto, ...);
+│                            # the same models fill the UI forms and are sent/received by the API tests
 ├── enums/                   # Fuel, Months
-└── utils/                   # ConfigReader, UserFactory, CarFactory, listeners, screenshots
+└── utils/                   # ConfigReader, UserFactory, CarFactory, SearchFactory,
+                             # SchemaValidator, listeners, screenshots
 src/main/resources
 └── config.properties        # default settings (not in git, see below)
 src/test/java
@@ -49,6 +51,7 @@ src/test/resources
 ├── crossbrowser.xml             # smoke, 3 browsers in parallel
 ├── crossbrowser_regression.xml  # smoke + regression, 3 browsers in parallel
 ├── apitests.xml                 # API tests, no browser
+├── schemas/                     # JSON schemas of the API answers, one file per Swagger schema
 ├── logback.xml
 └── allure.properties
 docker-compose.yml           # Selenium Grid: hub + 3 browser nodes
@@ -64,19 +67,34 @@ docker-compose.yml           # Selenium Grid: hub + 3 browser nodes
 | `FindYourCarTests`  | car search: positive, calendar, invalid search data                   |
 | `NavigationTests`   | header menu, "Let the car work", social network links                 |
 
-API tests (call the site's REST backend directly, endpoints taken from the site's frontend):
+API tests (call the site's REST backend directly, endpoints and models as in the backend Swagger):
 
 | Class                           | What is tested                                             |
 |---------------------------------|------------------------------------------------------------|
-| `AuthenticationControllerTests` | registration: positive, duplicate user, invalid emails and passwords (data providers), blank password; login: token in the answer, wrong credentials |
-| `CarControllerTests`            | search by city and dates, blank city, empty body, invalid date range; adding a car with a Bearer token, missing field, no/invalid token |
+| `AuthenticationControllerTests` | registration: positive, already registered user, blank email, blank password, invalid emails and passwords (data providers); login: token in the answer, wrong credentials |
+| `CarControllerTests`            | search: positive, blank city, empty request, end date before start date, the same day, dates in the past; adding a car: positive, missing field, no/invalid token; deleting a car: positive (checked in the user's car list), no token, not existing car |
+
+How the API tests check an answer:
+
+1. **status code** first, as a hard assert: if it is wrong, the body has another format;
+2. **JSON schema** of the body (`utils.SchemaValidator`), once per endpoint + status code;
+3. **values** (error text, token, found cars).
+
+Expected results come from Swagger or, where Swagger has no constraint, from the UI behaviour.
+Such assumptions are marked `TO CLARIFY` in the test comments.
+Tests create as little data as possible: checks that need a user use the existing user
+from `config.properties`, and a car added by a test is deleted after it.
 
 Groups: `smoke`, `regression`, `external` (links to other sites), `api`, `api_smoke`.
 
-> Some tests fail **on purpose**: they show real bugs of the site
-> (e.g. an email with a Cyrillic domain is accepted, login is case-sensitive to the email,
-> the backend accepts a search with the end date before the start date).
-> They are kept in the regression to keep the bugs visible.
+> Some tests fail because of **known bugs** of the site. The tests check the expected behaviour,
+> so they stay red until the bugs are fixed and keep the bugs visible in the report.
+>
+> - UI: an email with a Cyrillic domain is accepted, login is case-sensitive to the email.
+> - API: an email with a Cyrillic domain is accepted; search accepts a blank city, an empty request,
+>   an end date before the start date, the same start and end day and dates in the past;
+>   a blank password is answered in another error format;
+>   a request without a token gets 403 instead of 401 (add and delete a car).
 
 ## Setup
 
@@ -118,7 +136,7 @@ On Windows use `.\gradlew`, on Linux/macOS `./gradlew`.
 
 | Command                                  | What runs                                     |
 |------------------------------------------|-----------------------------------------------|
-| `.\gradlew test`                         | all tests, one browser, test classes in parallel |
+| `.\gradlew test`                         | all UI tests in one browser (Chrome by default) and all API tests, test classes in parallel |
 | `.\gradlew smoketests`                   | smoke, one browser                            |
 | `.\gradlew regressiontests`              | smoke + regression, one browser               |
 | `.\gradlew crossbrowser`                 | smoke in Chrome, Firefox and Edge in parallel |

@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ErrorMessageDtoMapStringString",
+  "description": "Validation error body: message is a map field -> error text",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string" },
+    "status": { "type": "integer" },
+    "error": { "type": "string" },
+    "message": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "path": { "type": "string" }
+  }
+}

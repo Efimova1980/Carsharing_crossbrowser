@@ -10,4 +10,6 @@ public interface Endpoints {
     // Car Controller
     String SEARCH_PATH = "/v1/cars/search";
     String CARS_PATH = "/v1/cars";
+    String CAR_BY_SERIAL_NUMBER_PATH = "/v1/cars/{serialNumber}";
+    String MY_CARS_PATH = "/v1/cars/my";
 }

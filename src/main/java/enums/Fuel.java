@@ -1,24 +1,20 @@
 package enums;
 
+// fuel types of the site; value is the string the site and the API use (CarDto.fuel)
 public enum Fuel {
-    DIESEL("//option[@value='Diesel']"),
-    PETROL("//option[@value='Petrol']"),
-    HYBRID("//option[@value='Hybrid']"),
-    ELECTRIC("//option[@value='Electric']"),
-    GAS("//option[@value='Gas']");
+    DIESEL("Diesel"),
+    PETROL("Petrol"),
+    HYBRID("Hybrid"),
+    ELECTRIC("Electric"),
+    GAS("Gas");
 
-    private String locator;
+    private final String value;
 
-    Fuel(String locator) {
-        this.locator = locator;
+    Fuel(String value) {
+        this.value = value;
     }
 
-    public String getLocator() {
-        return locator;
-    }
-
-    @Override
-    public String toString() {
-        return super.toString().substring(0, 1).toUpperCase() + super.toString().substring(1);
+    public String getValue() {
+        return value;
     }
 }

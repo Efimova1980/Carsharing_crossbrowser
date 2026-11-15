@@ -1,6 +1,6 @@
 package pages;
 
-import dto.User;
+import dto.RegistrationBodyDto;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
@@ -53,7 +53,7 @@ public class RegistrationPage extends BasePage{
                     .perform();
     }
 
-    public void typeRegistrationForm(User user){
+    public void typeRegistrationForm(RegistrationBodyDto user){
         inputName.sendKeys(user.getFirstName(), Keys.TAB);
         inputLastName.sendKeys(user.getLastName(), Keys.TAB);
         inputEmail.sendKeys(user.getUsername(), Keys.TAB);

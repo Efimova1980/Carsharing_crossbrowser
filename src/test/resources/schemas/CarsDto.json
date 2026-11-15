@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CarsDto",
+  "description": "Success body of POST /v1/cars/search and GET /v1/cars/my",
+  "type": "object",
+  "properties": {
+    "cars": {
+      "type": "array",
+      "items": { "$ref": "CarDto.json" }
+    }
+  }
+}

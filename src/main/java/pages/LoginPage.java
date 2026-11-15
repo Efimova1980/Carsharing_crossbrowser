@@ -1,6 +1,6 @@
 package pages;
 
-import dto.User;
+import dto.AuthenticationBodyDto;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -36,7 +36,7 @@ public class LoginPage extends BasePage{
         return isElementEnabled(btnYalla);
     }
 
-    public void typeLoginForm(User user){
+    public void typeLoginForm(AuthenticationBodyDto user){
         type(email_locator, user.getUsername(), Keys.TAB);
         type(password_locator, user.getPassword(), Keys.TAB);
     }

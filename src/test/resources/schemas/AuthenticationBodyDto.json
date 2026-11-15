@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AuthenticationBodyDto",
+  "description": "Body of POST /v1/user/login/usernamepassword",
+  "type": "object",
+  "properties": {
+    "username": { "type": "string" },
+    "password": {
+      "type": "string",
+      "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$#^&*!])(?=.*[a-zA-Z]).{8,}$"
+    }
+  },
+  "required": ["password", "username"]
+}

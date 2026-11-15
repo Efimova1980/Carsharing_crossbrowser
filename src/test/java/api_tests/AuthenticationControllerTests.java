@@ -1,7 +1,12 @@
 package api_tests;
 
 import api.AuthenticationController;
-import dto.User;
+import com.networknt.schema.ValidationMessage;
+import dto.AuthenticationBodyDto;
+import dto.ErrorMessageDtoMapStringString;
+import dto.ErrorMessageDtoString;
+import dto.RegistrationBodyDto;
+import dto.TokenDto;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -12,10 +17,13 @@ import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-import org.testng.asserts.SoftAssert;
 import utils.ConfigReader;
 import utils.TestNGListener;
 
+import java.io.IOException;
+import java.util.Set;
+
+import static utils.SchemaValidator.validateJsonSchema;
 import static utils.UserFactory.*;
 
 @Listeners(TestNGListener.class)
@@ -31,30 +39,26 @@ public class AuthenticationControllerTests extends AuthenticationController {
     @Severity(SeverityLevel.BLOCKER)
     @Story("Successful registration")
     @Test(groups = {"api", "api_smoke"})
-    public void registrationPositiveTest() {
-        SoftAssert softAssert = new SoftAssert();
+    public void registrationPositiveTest() throws IOException {
         Response response = registration(positiveUser());
-        softAssert.assertEquals(response.statusCode(), 200, "validate status code");
-        softAssert.assertFalse(response.jsonPath().getString("accessToken").isBlank(),
+        Assert.assertEquals(response.statusCode(), 200, "validate status code");
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "TokenDto.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        Assert.assertFalse(response.as(TokenDto.class).getAccessToken().isBlank(),
                 "validate accessToken is returned");
-        softAssert.assertAll();
     }
 
     //----------------------------REGISTRATION: NEGATIVE TESTS-----------------------------
     @Story("Already registered user")
     @Test(groups = "api")
-    public void registrationNegativeTest_DuplicateUser() {
-        // self-contained: the duplicate is created by this very test, not taken from config
-        User user = positiveUser();
-        Assert.assertEquals(registration(user).statusCode(), 200,
-                "precondition: first registration succeeded");
-
-        Response response = registration(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 400, "validate status code");
-        softAssert.assertEquals(response.jsonPath().getString("message"), "User already exists",
+    public void registrationNegativeTest_DuplicateUser() throws IOException {
+        // the user from config is already registered: no new users are created by this test
+        Response response = registration(existingUser());
+        Assert.assertEquals(response.statusCode(), 400, "validate status code");
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoString.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        Assert.assertEquals(response.as(ErrorMessageDtoString.class).getMessage(), "User already exists",
                 "validate error message");
-        softAssert.assertAll();
     }
 
     //------------------------------INVALID EMAIL------------------------------------------
@@ -62,15 +66,15 @@ public class AuthenticationControllerTests extends AuthenticationController {
     // not the "well-formed email" one from the invalidEmails provider
     @Story("Email validation")
     @Test(groups = "api")
-    public void registrationNegativeTest_BlankEmail() {
-        User user = positiveUser();
+    public void registrationNegativeTest_BlankEmail() throws IOException {
+        RegistrationBodyDto user = positiveUser();
         user.setUsername("");
         Response response = registration(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 400, "validate status code");
-        softAssert.assertEquals(response.jsonPath().getString("message.username"),
+        Assert.assertEquals(response.statusCode(), 400, "validate status code");
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoMapStringString.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        Assert.assertEquals(response.as(ErrorMessageDtoMapStringString.class).getMessage().get("username"),
                 "must not be blank", "validate error message");
-        softAssert.assertAll();
     }
 
     /*
@@ -88,7 +92,7 @@ public class AuthenticationControllerTests extends AuthenticationController {
                 {"ha rry@gmail.com"},         // space inside the name
                 {".harry@gmail.com"},         // dot at the start
                 // known site bug (same as in the UI regression): a Cyrillic domain is accepted
-                // (200 + token), so this row fails on purpose; the local part is unique per run,
+                // (200 + token), so this row fails until the bug is fixed; the local part is unique per run,
                 // otherwise the next run would get "User already exists" instead of the bug
                 {positiveUser().getUsername().split("@")[0] + "@почта.com"}
         };
@@ -97,38 +101,40 @@ public class AuthenticationControllerTests extends AuthenticationController {
     @Story("Email validation")
     @Test(groups = "api", dataProvider = "invalidEmails")
     public void registrationNegativeTest_InvalidEmail(String email) {
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         user.setUsername(email);
         Response response = registration(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 400,
+        Assert.assertEquals(response.statusCode(), 400,
                 "validate status code for email '" + email + "'");
-        softAssert.assertEquals(response.jsonPath().getString("message.username"),
+        Assert.assertEquals(response.as(ErrorMessageDtoMapStringString.class).getMessage().get("username"),
                 "must be a well-formed email address",
                 "validate error message for email '" + email + "'");
-        softAssert.assertAll();
     }
 
     //------------------------------INVALID PASSWORD---------------------------------------
 
-    // the server answers 400 with no message field for a blank password
+    // expected: a field validation error, the same format as for a blank email
+    // known backend bug: the answer is the default Spring error (timestamp as a number,
+    // no message), not the API error format. The test fails until the bug is fixed (product defect).
+    // TO CLARIFY: Swagger allows "any object" for 400, so the error format is not specified
     @Story("Registration validation")
     @Test(groups = "api")
-    public void registrationNegativeTest_BlankPassword() {
-        User user = positiveUser();
+    public void registrationNegativeTest_BlankPassword() throws IOException {
+        RegistrationBodyDto user = positiveUser();
         user.setPassword("");
         Response response = registration(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 400, "validate status code");
-        softAssert.assertEquals(response.jsonPath().getString("error"), "Bad Request",
-                "validate error field");
-        softAssert.assertAll();
+        Assert.assertEquals(response.statusCode(), 400, "validate status code");
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoMapStringString.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        ErrorMessageDtoMapStringString body = response.as(ErrorMessageDtoMapStringString.class);
+        Assert.assertTrue(body.getMessage() != null && body.getMessage().containsKey("password"),
+                "validate error for field password");
     }
 
     /*
     password rule: ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@$#^&*!])(?=.*[a-zA-Z]).{8,}$
     the server answers with one combined message, so the row expects its distinctive fragment;
-    the blank password is a separate test above: its answer has no message field at all
+    the blank password is a separate test above: its answer has a different format (known bug)
     row: password, expected fragment of message.password
      */
     @DataProvider
@@ -145,28 +151,26 @@ public class AuthenticationControllerTests extends AuthenticationController {
     @Story("Password validation")
     @Test(groups = "api", dataProvider = "invalidPasswords")
     public void registrationNegativeTest_InvalidPassword(String password, String expectedFragment) {
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         user.setPassword(password);
         Response response = registration(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 400,
+        Assert.assertEquals(response.statusCode(), 400,
                 "validate status code for password '" + password + "'");
-        softAssert.assertTrue(response.jsonPath().getString("message.password").contains(expectedFragment),
+        Assert.assertTrue(response.as(ErrorMessageDtoMapStringString.class).getMessage().get("password").contains(expectedFragment),
                 "validate error message for password '" + password + "'");
-        softAssert.assertAll();
     }
 
     //----------------------------LOGIN: POSITIVE TESTS------------------------------------
     @Severity(SeverityLevel.BLOCKER)
     @Story("Successful login")
     @Test(groups = {"api", "api_smoke"})
-    public void loginPositiveTest() {
-        Response response = login(existingUser());
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 200, "validate status code");
-        softAssert.assertFalse(response.jsonPath().getString("accessToken").isBlank(),
+    public void loginPositiveTest() throws IOException {
+        Response response = login(existingUserCredentials());
+        Assert.assertEquals(response.statusCode(), 200, "validate status code");
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "TokenDto.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        Assert.assertFalse(response.as(TokenDto.class).getAccessToken().isBlank(),
                 "validate accessToken is returned");
-        softAssert.assertAll();
     }
 
     //----------------------------LOGIN: NEGATIVE TESTS------------------------------------
@@ -174,22 +178,23 @@ public class AuthenticationControllerTests extends AuthenticationController {
     // row: case name, user
     @DataProvider
     public Object[][] wrongCredentials() {
-        User notRegistered = positiveUser();
+        RegistrationBodyDto notRegistered = positiveUser();
         return new Object[][]{
                 {"wrong password", userWithCredentials(ConfigReader.get("login"), "Wrong123!")},
-                {"user is not registered", notRegistered},
+                {"user is not registered", userWithCredentials(notRegistered.getUsername(), notRegistered.getPassword())},
                 {"blank username", userWithCredentials("", "Pass123!")}
         };
     }
 
     @Story("Wrong credentials")
     @Test(groups = "api", dataProvider = "wrongCredentials")
-    public void loginNegativeTest_WrongCredentials(String caseName, User user) {
+    public void loginNegativeTest_WrongCredentials(String caseName, AuthenticationBodyDto user) throws IOException {
         Response response = login(user);
-        SoftAssert softAssert = new SoftAssert();
-        softAssert.assertEquals(response.statusCode(), 401, "validate status code for " + caseName);
-        softAssert.assertEquals(response.jsonPath().getString("message"), "Login or Password incorrect",
+        Assert.assertEquals(response.statusCode(), 401, "validate status code for " + caseName);
+        // the only test that gets the login 401 answer, so its schema is checked here (for every row)
+        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoString.json");
+        Assert.assertTrue(errors.isEmpty(), "validate json schema for " + caseName + ": " + errors);
+        Assert.assertEquals(response.as(ErrorMessageDtoString.class).getMessage(), "Login or Password incorrect",
                 "validate error message for " + caseName);
-        softAssert.assertAll();
     }
 }

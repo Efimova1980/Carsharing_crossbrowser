@@ -1,5 +1,5 @@
 package ui_tests;
-import dto.User;
+import dto.RegistrationBodyDto;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -39,7 +39,7 @@ public class RegistrationTests extends AppManager {
     @Story("Successful registration")
     @Test(groups = "smoke")
     public void registrationPositiveTest(){
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         registrationPage.typeRegistrationForm(user);
         registrationPage.setCheckBoxAgree_WithActions(true);
         registrationPage.clickYalla();
@@ -72,7 +72,7 @@ public class RegistrationTests extends AppManager {
     @Story("Already registered user")
     @Test(groups = "regression")
     public void registrationNegativeTest_UserAlreadyExists(){
-        User user = existingUser();
+        RegistrationBodyDto user = existingUser();
         registrationPage.typeRegistrationForm(user);
         registrationPage.setCheckBoxAgree_WithActions(true);
         registrationPage.clickYalla();
@@ -82,7 +82,7 @@ public class RegistrationTests extends AppManager {
     @Story("Terms of use agreement")
     @Test(groups = "regression")
     public void registrationNegativeTest_NoCheckboxAgree(){
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         registrationPage.typeRegistrationForm(user);
         registrationPage.setCheckBoxAgree_WithActions(false);
         Assert.assertFalse(registrationPage.isBtnYallaEnabled());
@@ -108,7 +108,7 @@ public class RegistrationTests extends AppManager {
     @Story("Password validation")
     @Test(groups = "regression", dataProvider = "invalidPasswords")
     public void registrationNegativeTest_InvalidPassword(String password, String expectedError){
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         user.setPassword(password);
         checkFormRejected(user, expectedError, "password '" + password + "'");
     }
@@ -162,13 +162,13 @@ public class RegistrationTests extends AppManager {
     @Story("Email validation")
     @Test(groups = "regression", dataProvider = "invalidEmails")
     public void registrationNegativeTest_InvalidEmail(String email, String expectedError){
-        User user = positiveUser();
+        RegistrationBodyDto user = positiveUser();
         user.setUsername(email);
         checkFormRejected(user, expectedError, "email '" + email + "'");
     }
 
     // fills the form with one wrong field: the error must be shown and Yalla must stay disabled
-    private void checkFormRejected(User user, String expectedError, String field){
+    private void checkFormRejected(RegistrationBodyDto user, String expectedError, String field){
         SoftAssert softAssert = new SoftAssert();
         registrationPage.typeRegistrationForm(user);
         registrationPage.setCheckBoxAgree_WithActions(true);

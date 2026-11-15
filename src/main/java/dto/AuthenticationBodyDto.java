@@ -2,6 +2,8 @@ package dto;
 
 import lombok.*;
 
+// body of POST /v1/user/login/usernamepassword; also fills the login form
+// username is the email
 @Getter
 @Setter
 @Builder
@@ -9,9 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class User {
+public class AuthenticationBodyDto {
     private String username;
     private String password;
-    private String firstName;
-    private String lastName;
 }

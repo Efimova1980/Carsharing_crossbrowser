@@ -1,8 +1,12 @@
-package api.dto;
+package dto;
 
 import lombok.*;
 
-// one car in the search response; unknown fields of the answer (bookedPeriods, ...) are ignored
+import java.util.List;
+
+// a car: body of POST /v1/cars and an item of CarsDto; also fills the "Let the car work" form
+// fuel is a string as in the Swagger schema: "Diesel", "Petrol", "Hybrid", "Electric", "Gas"
+// lat, lng, owner, bookedPeriods are filled by the server
 @Getter
 @Setter
 @Builder
@@ -23,6 +27,7 @@ public class CarDto {
     private String city;
     private Double lat;
     private Double lng;
-    private String owner;
     private String image;
+    private String owner;
+    private List<BookedDto> bookedPeriods;
 }

@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CarDto",
+  "description": "A car: body of POST /v1/cars and an item of CarsDto. about may be null in real answers",
+  "type": "object",
+  "properties": {
+    "serialNumber": { "type": "string" },
+    "manufacture": { "type": "string" },
+    "model": { "type": "string" },
+    "year": { "type": "string" },
+    "fuel": { "type": "string" },
+    "seats": { "type": "integer" },
+    "carClass": { "type": "string" },
+    "pricePerDay": { "type": "number" },
+    "about": { "type": ["string", "null"] },
+    "city": { "type": "string" },
+    "lat": { "type": "number" },
+    "lng": { "type": "number" },
+    "image": { "type": "string" },
+    "owner": { "type": "string" },
+    "bookedPeriods": {
+      "type": "array",
+      "items": { "$ref": "BookedDto.json" }
+    }
+  },
+  "required": ["carClass", "city", "fuel", "manufacture", "model", "pricePerDay", "seats", "serialNumber", "year"]
+}

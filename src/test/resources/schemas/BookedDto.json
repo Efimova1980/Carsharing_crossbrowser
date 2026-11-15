@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BookedDto",
+  "description": "One booked period of a car (CarDto.bookedPeriods); dates yyyy-MM-dd",
+  "type": "object",
+  "properties": {
+    "email": { "type": "string" },
+    "startDate": { "type": "string" },
+    "endDate": { "type": "string" }
+  }
+}

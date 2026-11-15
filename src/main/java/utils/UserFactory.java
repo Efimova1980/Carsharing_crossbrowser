@@ -1,12 +1,13 @@
 package utils;
 
-import dto.User;
+import dto.AuthenticationBodyDto;
+import dto.RegistrationBodyDto;
 import net.datafaker.Faker;
 
 public class UserFactory {
     static Faker faker = new Faker();
-    public static User positiveUser(){
-        User user = User.builder()
+    public static RegistrationBodyDto positiveUser(){
+        RegistrationBodyDto user = RegistrationBodyDto.builder()
                 .firstName(faker.name().firstName())
                 .lastName(faker.name().lastName())
                 .username(faker.internet().emailAddress())
@@ -15,17 +16,18 @@ public class UserFactory {
         return user;
     }
 
-    // user for the login form: only email and password are needed
-    public static User userWithCredentials(String username, String password){
-        return User.builder()
+    // user for the login form / login call: only email and password are needed
+    public static AuthenticationBodyDto userWithCredentials(String username, String password){
+        return AuthenticationBodyDto.builder()
                 .username(username)
                 .password(password)
                 .build();
     }
 
-    // user who is already registered on the site: login and password from config
-    public static User existingUser(){
-        return User.builder()
+    // user who is already registered on the site: login and password from config;
+    // registration body - for the "user already exists" checks
+    public static RegistrationBodyDto existingUser(){
+        return RegistrationBodyDto.builder()
                 .firstName(faker.name().firstName())
                 .lastName(faker.name().lastName())
                 .username(ConfigReader.get("login"))
@@ -33,8 +35,13 @@ public class UserFactory {
                 .build();
     }
 
-    public static User emptyUser(){
-        User user = User.builder()
+    // the same registered user for login (login and password from config)
+    public static AuthenticationBodyDto existingUserCredentials(){
+        return userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
+    }
+
+    public static RegistrationBodyDto emptyUser(){
+        RegistrationBodyDto user = RegistrationBodyDto.builder()
                 .firstName("")
                 .lastName("")
                 .username("")

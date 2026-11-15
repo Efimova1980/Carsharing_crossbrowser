@@ -1,8 +1,8 @@
-package api.dto;
+package dto;
 
 import lombok.*;
 
-// request body of POST /v1/cars/search; dates in ISO format (yyyy-MM-dd)
+// one booked period of a car (CarDto.bookedPeriods); dates in ISO format (yyyy-MM-dd)
 @Getter
 @Setter
 @Builder
@@ -10,8 +10,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 
-public class SearchDto {
-    private String city;
+public class BookedDto {
+    private String email;
     private String startDate;
     private String endDate;
 }

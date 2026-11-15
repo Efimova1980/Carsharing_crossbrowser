@@ -1,14 +1,9 @@
 package api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import enums.Fuel;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.HttpClientConfig;
@@ -23,7 +18,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import utils.ConfigReader;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -36,7 +30,7 @@ import java.util.Map;
 public abstract class BaseApi {
     public static final Logger logger = LoggerFactory.getLogger(BaseApi.class);
 
-    // Heroku free dynos sleep: the first request may take tens of seconds to wake the app
+    // the backend may need time to wake up: the first request can take tens of seconds
     private static final int TIMEOUT_MS = 60_000;
 
     // the SiftingAppender in logback.xml splits logs by the logName MDC key,
@@ -78,18 +72,8 @@ public abstract class BaseApi {
     }
 
     private static ObjectMapper objectMapper() {
-        SimpleModule fuelModule = new SimpleModule();
-        // the API expects "Petrol", "Diesel", ...; Jackson's default (enum name) is "PETROL",
-        // and Fuel.toString() keeps the name uppercase too, so a custom serializer is needed
-        fuelModule.addSerializer(Fuel.class, new JsonSerializer<>() {
-            @Override
-            public void serialize(Fuel fuel, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-                gen.writeString(fuel.name().charAt(0) + fuel.name().substring(1).toLowerCase());
-            }
-        });
         return JsonMapper.builder()
-                .addModule(fuelModule)
-                // search response has fields our DTOs don't declare (bookedPeriods, ...)
+                // DTOs follow the Swagger schemas; a field the backend adds later must not break the tests
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 // partially built DTOs (e.g. a user without names) must not send nulls
                 .serializationInclusion(JsonInclude.Include.NON_NULL)

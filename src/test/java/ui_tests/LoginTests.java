@@ -1,6 +1,7 @@
 package ui_tests;
 
-import dto.User;
+import dto.AuthenticationBodyDto;
+import dto.RegistrationBodyDto;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
@@ -41,7 +42,7 @@ public class LoginTests extends AppManager {
     @Story("Successful login")
     @Test(groups = "smoke")
     public void loginPositiveTest(){
-        User user = userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
+        AuthenticationBodyDto user = userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
         loginPage.typeLoginForm(user);
         loginPage.clickBtnYalla();
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"));
@@ -51,7 +52,7 @@ public class LoginTests extends AppManager {
     @Story("Successful login")
     @Test(groups = "regression")
     public void loginPositiveTest_EmailInUpperCase(){
-        User user = userWithCredentials(ConfigReader.get("login").toUpperCase(), ConfigReader.get("password"));
+        AuthenticationBodyDto user = userWithCredentials(ConfigReader.get("login").toUpperCase(), ConfigReader.get("password"));
         loginPage.typeLoginForm(user);
         loginPage.clickBtnYalla();
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"));
@@ -85,7 +86,7 @@ public class LoginTests extends AppManager {
     public Object[][] wrongCredentials() {
         String login = ConfigReader.get("login");
         String password = ConfigReader.get("password");
-        User notRegistered = positiveUser();
+        RegistrationBodyDto notRegistered = positiveUser();
         return new Object[][]{
                 {"password without special symbol", login, "Pass1234"},
                 {"password with trailing spaces", login, password + "   "},

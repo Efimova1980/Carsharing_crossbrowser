@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SearchDto",
+  "description": "Body of POST /v1/cars/search; dates yyyy-MM-dd",
+  "type": "object",
+  "properties": {
+    "city": { "type": "string" },
+    "startDate": { "type": "string" },
+    "endDate": { "type": "string" }
+  }
+}

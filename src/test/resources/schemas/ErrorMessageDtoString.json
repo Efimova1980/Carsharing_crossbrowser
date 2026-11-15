@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ErrorMessageDtoString",
+  "description": "Error body with one text message, e.g. {\"message\": \"User already exists\"}",
+  "type": "object",
+  "properties": {
+    "timestamp": { "type": "string" },
+    "status": { "type": "integer" },
+    "error": { "type": "string" },
+    "message": { "type": "string" },
+    "path": { "type": "string" }
+  }
+}

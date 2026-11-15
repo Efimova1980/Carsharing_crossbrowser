@@ -31,6 +31,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
     // attaches request/response of every API call to the Allure report
     implementation 'io.qameta.allure:allure-rest-assured:2.35.5'
+    // validates response bodies against JSON schemas (src/test/resources/schemas), see utils.SchemaValidator
+    implementation 'com.networknt:json-schema-validator:1.5.6'
 }
 
 // Allure report: .\gradlew allureServe (opens in browser) or .\gradlew allureReport

@@ -1,7 +1,6 @@
 package pages;
 
-import dto.Car;
-import enums.Fuel;
+import dto.CarDto;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -48,7 +47,7 @@ public class LetTheCarWorkPage extends BasePage {
     @FindBy(xpath = "//button[@type='submit']")
     WebElement btnSubmit;
 
-    public void typeLetTheCarWorkForm(Car car){
+    public void typeLetTheCarWorkForm(CarDto car){
         inputLocation.sendKeys(car.getCity());
         typeCity_WithJS(car.getCity());
         inputManufacture.sendKeys(car.getManufacture());
@@ -94,9 +93,10 @@ public class LetTheCarWorkPage extends BasePage {
         btnSubmit.click();
     }
 
-    private void typeFuel(Fuel fuel){
+    // fuel is the option value as in CarDto: "Diesel", "Petrol", ...
+    private void typeFuel(String fuel){
         selectFuel.click();
-        WebElement element = getDriver().findElement(By.xpath(fuel.getLocator()));
+        WebElement element = getDriver().findElement(By.xpath("//option[@value='" + fuel + "']"));
         element.click();
     }
 
