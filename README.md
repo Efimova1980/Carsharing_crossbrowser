@@ -200,7 +200,7 @@ Every Grid session is named after the test (`ClassName.testName`), so it is easy
 |--------------|--------------------------------------------------------------|
 | Allure report | `.\gradlew allureServe` (opens in the browser) or `.\gradlew allureReport` → `build/reports/allure-report/allureReport/index.html` |
 | Allure results | `build/allure-results`                                     |
-| Screenshots  | `build/screenshots` (failed tests only; also attached to Allure) |
+| Screenshots  | `build/screenshots` (failed tests only; not attached to Allure) |
 | Logs         | `build/logs` (common log and one log per browser)            |
 | Gradle report | `build/reports/tests`                                       |
 

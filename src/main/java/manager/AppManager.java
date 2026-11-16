@@ -1,6 +1,5 @@
 package manager;
 
-import io.qameta.allure.Allure;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.events.EventFiringDecorator;
@@ -17,7 +16,6 @@ import utils.ConfigReader;
 import utils.TakeScreenShot;
 import utils.WDListener;
 
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -96,13 +94,11 @@ public class AppManager {
         MDC.remove("logName");
     }
 
-    // here and not in TestNGListener.onTestFailure: by then Allure has already closed the test,
-    // in @AfterMethod the screenshot is attached to the test (Tear down section of the report)
+    // the screenshot of a failed test is saved to build/screenshots only, it is not attached
+    // to the Allure report: the report is published and must not show the site
     private void takeScreenShot(WebDriver webDriver, String testName) {
         try {
-            byte[] png = TakeScreenShot.takeScreenShot((TakesScreenshot) webDriver, getBrowser(), testName);
-            Allure.addAttachment("Screenshot (" + getBrowser() + ")", "image/png",
-                    new ByteArrayInputStream(png), "png");
+            TakeScreenShot.takeScreenShot((TakesScreenshot) webDriver, getBrowser(), testName);
         } catch (RuntimeException e) {
             // a failed screenshot must not stop quit(): the browser would stay open on the grid
             logger.error("Can't take screenshot: " + e.getMessage());
