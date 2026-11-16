@@ -1,10 +1,7 @@
 package ui_tests;
 
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
 import manager.AppManager;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -19,8 +16,6 @@ import java.time.LocalDate;
 
 @Listeners(TestNGListener.class)
 
-@Epic("Car rental")
-@Feature("Find car")
 @Severity(SeverityLevel.NORMAL)
 public class FindYourCarTests extends AppManager {
     HomePage homePage;
@@ -31,7 +26,6 @@ public class FindYourCarTests extends AppManager {
     }
 
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Search by city and dates")
     @Test(groups = "smoke")
     public void findYourCarPositiveTest(){
         String city = "Rehovot";
@@ -42,10 +36,8 @@ public class FindYourCarTests extends AppManager {
         Assert.assertTrue(homePage.isUrlContains("results",2));
     }
 
-    //HOMEWORK10
-    //with calendar
+    // dates are picked in the calendar, not typed
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Dates from calendar")
     @Test(groups = "regression")
     public void findYourCarPositiveTestWithCalandar(){
         String city = "Rehovot";
@@ -56,7 +48,6 @@ public class FindYourCarTests extends AppManager {
         Assert.assertTrue(homePage.isUrlContains("results",2));
     }
 
-    //HOMEWORK 10
     //NEGATIVE TESTS: the form shows errors and Yalla stays disabled (so it is not clicked)
     // row: case name, city, start date, end date, expected error texts
     @DataProvider
@@ -74,7 +65,6 @@ public class FindYourCarTests extends AppManager {
         };
     }
 
-    @Story("Search form validation")
     @Test(groups = "regression", dataProvider = "invalidSearchData")
     public void findYourCarNegativeTest(String caseName, String city, LocalDate startDate, LocalDate endDate,
                                         String[] expectedErrors) {

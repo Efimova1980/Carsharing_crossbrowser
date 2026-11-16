@@ -12,7 +12,7 @@ no browser needed. Results are shown in an **Allure** report.
 | Language       | Java 21                                                  |
 | Build          | Gradle 8.14 (wrapper included)                           |
 | Browser driver | Selenium 4.49 (WebDriver, RemoteWebDriver)               |
-| API client     | REST Assured 5.5 + Jackson (requests/responses in Allure) |
+| API client     | REST Assured 5.5 + Jackson (requests/responses in the API log) |
 | API contract   | JSON Schema (networknt json-schema-validator), schemas from the backend Swagger |
 | Test runner    | TestNG 7.12 (suites, groups, data providers, parallel)   |
 | Grid           | Selenium Grid 4 in Docker (hub + Chrome/Firefox/Edge)    |
@@ -69,10 +69,11 @@ docker-compose.yml           # Selenium Grid: hub + 3 browser nodes
 
 API tests (call the site's REST backend directly, endpoints and models as in the backend Swagger):
 
-| Class                           | What is tested                                             |
-|---------------------------------|------------------------------------------------------------|
-| `AuthenticationControllerTests` | registration: positive, already registered user, blank email, blank password, invalid emails and passwords (data providers); login: token in the answer, wrong credentials |
-| `CarControllerTests`            | search: positive, blank city, empty request, end date before start date, the same day, dates in the past; adding a car: positive, missing field, no/invalid token; deleting a car: positive (checked in the user's car list), no token, not existing car |
+| Class                  | What is tested                                             |
+|------------------------|------------------------------------------------------------|
+| `RegistrationApiTests` | registration: positive, already registered user, blank email, blank password, invalid emails and passwords (data providers) |
+| `LoginApiTests`        | login: token in the answer, wrong credentials              |
+| `CarControllerTests`   | search: positive, blank city, empty request, end date before start date, the same day, dates in the past; adding a car: positive, missing field, no/invalid token; deleting a car: positive (checked in the user's car list), no token, not existing car |
 
 How the API tests check an answer:
 
@@ -203,5 +204,5 @@ Every Grid session is named after the test (`ClassName.testName`), so it is easy
 | Logs         | `build/logs` (common log and one log per browser)            |
 | Gradle report | `build/reports/tests`                                       |
 
-In Allure, tests are grouped by browser (Suites) and by Epic / Feature / Story (Behaviors);
+In Allure, tests are grouped by browser and test class (Suites);
 failed tests are split into **Product defects** (assertion failed) and **Test defects** (errors in the test or environment).

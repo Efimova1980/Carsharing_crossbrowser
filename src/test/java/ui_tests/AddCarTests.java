@@ -2,11 +2,8 @@ package ui_tests;
 
 import dto.AuthenticationBodyDto;
 import dto.CarDto;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
 import manager.AppManager;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -27,8 +24,6 @@ import java.time.LocalDate;
 @Listeners(TestNGListener.class)
 
 
-@Epic("Car rental")
-@Feature("Add car")
 @Severity(SeverityLevel.NORMAL)
 public class AddCarTests extends AppManager {
     HomePage homePage;
@@ -52,7 +47,6 @@ public class AddCarTests extends AppManager {
     }
 
     @Severity(SeverityLevel.CRITICAL)
-    @Story("Add car with valid data")
     @Test(groups = "smoke")
     public void AddNewCarPositiveTest(){
         CarDto car = CarFactory.positiveCar();
@@ -62,7 +56,6 @@ public class AddCarTests extends AppManager {
     }
 
     //add car negative tests
-    @Story("Address validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_LocationEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -71,7 +64,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong address"));
     }
 
-    @Story("Required fields")
     @Test(groups = "regression")
     public void AddNewNegativeTest_ManufactureEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -80,7 +72,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Make is required"));
     }
 
-    @Story("Required fields")
     @Test(groups = "regression")
     public void AddNewNegativeTest_ModelEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -89,7 +80,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Model is required"));
     }
 
-    @Story("Year validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_YearEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -98,7 +88,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Year required"));
     }
 
-    @Story("Year validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_YearNegative(){
         CarDto car = CarFactory.positiveCar();
@@ -107,7 +96,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong year"));
     }
 
-    @Story("Year validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_YearAfterNow(){
         CarDto car = CarFactory.positiveCar();
@@ -116,7 +104,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Wrong year"));
     }
 
-    @Story("Seats validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -124,7 +111,6 @@ public class AddCarTests extends AppManager {
         letTheCarWorkPage.typeSeats("");
         Assert.assertTrue(homePage.isTextInErrorPresent("Number of seats is required"));
     }
-    @Story("Seats validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsLessThanTwo(){
         CarDto car = CarFactory.positiveCar();
@@ -133,7 +119,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car must have min 2 seat"));
     }
 
-    @Story("Seats validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsNegative(){
         CarDto car = CarFactory.positiveCar();
@@ -142,7 +127,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car must have min 2 seat"));
     }
 
-    @Story("Seats validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_SeatsMoreTwenty(){
         CarDto car = CarFactory.positiveCar();
@@ -151,7 +135,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("To much seats"));
     }
 
-    @Story("Required fields")
     @Test(groups = "regression")
     public void AddNewNegativeTest_CarClassEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -160,7 +143,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car class is required"));
     }
 
-    @Story("Required fields")
     @Test(groups = "regression")
     public void AddNewNegativeTest_CarRegistrationNumberEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -169,7 +151,6 @@ public class AddCarTests extends AppManager {
         Assert.assertTrue(homePage.isTextInErrorPresent("Car registration number is required"));
     }
 
-    @Story("Price validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_PriceEmpty(){
         CarDto car = CarFactory.positiveCar();
@@ -177,7 +158,6 @@ public class AddCarTests extends AppManager {
         letTheCarWorkPage.typePrice("");
         Assert.assertTrue(homePage.isTextInErrorPresent("Price is required"));
     }
-    @Story("Price validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_PriceNegative(){
         CarDto car = CarFactory.positiveCar();
@@ -185,7 +165,6 @@ public class AddCarTests extends AppManager {
         letTheCarWorkPage.typePrice("-0.01");
         Assert.assertTrue(homePage.isTextInErrorPresent("Price must be positive"));
     }
-    @Story("Price validation")
     @Test(groups = "regression")
     public void AddNewNegativeTest_PriceMoreThanOneThousand(){
         CarDto car = CarFactory.positiveCar();

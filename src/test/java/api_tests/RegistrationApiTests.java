@@ -2,22 +2,17 @@ package api_tests;
 
 import api.AuthenticationController;
 import com.networknt.schema.ValidationMessage;
-import dto.AuthenticationBodyDto;
 import dto.ErrorMessageDtoMapStringString;
 import dto.ErrorMessageDtoString;
 import dto.RegistrationBodyDto;
 import dto.TokenDto;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-import utils.ConfigReader;
 import utils.TestNGListener;
 
 import java.io.IOException;
@@ -28,16 +23,13 @@ import static utils.UserFactory.*;
 
 @Listeners(TestNGListener.class)
 
-@Epic("API")
-@Feature("Authentication Controller")
 @Severity(SeverityLevel.CRITICAL)
-public class AuthenticationControllerTests extends AuthenticationController {
+public class RegistrationApiTests extends AuthenticationController {
 
     //----------------------------REGISTRATION: POSITIVE TESTS-----------------------------
     // datafaker email is Latin-only and unique per run: no clash with the known
     // site bug of accepting Cyrillic domains, no "User already exists" on reruns
     @Severity(SeverityLevel.BLOCKER)
-    @Story("Successful registration")
     @Test(groups = {"api", "api_smoke"})
     public void registrationPositiveTest() throws IOException {
         Response response = registration(positiveUser());
@@ -49,7 +41,6 @@ public class AuthenticationControllerTests extends AuthenticationController {
     }
 
     //----------------------------REGISTRATION: NEGATIVE TESTS-----------------------------
-    @Story("Already registered user")
     @Test(groups = "api")
     public void registrationNegativeTest_DuplicateUser() throws IOException {
         // the user from config is already registered: no new users are created by this test
@@ -64,7 +55,6 @@ public class AuthenticationControllerTests extends AuthenticationController {
     //------------------------------INVALID EMAIL------------------------------------------
     // a blank email is a separate case: its message is "must not be blank",
     // not the "well-formed email" one from the invalidEmails provider
-    @Story("Email validation")
     @Test(groups = "api")
     public void registrationNegativeTest_BlankEmail() throws IOException {
         RegistrationBodyDto user = positiveUser();
@@ -98,7 +88,6 @@ public class AuthenticationControllerTests extends AuthenticationController {
         };
     }
 
-    @Story("Email validation")
     @Test(groups = "api", dataProvider = "invalidEmails")
     public void registrationNegativeTest_InvalidEmail(String email) {
         RegistrationBodyDto user = positiveUser();
@@ -117,7 +106,6 @@ public class AuthenticationControllerTests extends AuthenticationController {
     // known backend bug: the answer is the default Spring error (timestamp as a number,
     // no message), not the API error format. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: Swagger allows "any object" for 400, so the error format is not specified
-    @Story("Registration validation")
     @Test(groups = "api")
     public void registrationNegativeTest_BlankPassword() throws IOException {
         RegistrationBodyDto user = positiveUser();
@@ -148,7 +136,6 @@ public class AuthenticationControllerTests extends AuthenticationController {
         };
     }
 
-    @Story("Password validation")
     @Test(groups = "api", dataProvider = "invalidPasswords")
     public void registrationNegativeTest_InvalidPassword(String password, String expectedFragment) {
         RegistrationBodyDto user = positiveUser();
@@ -158,43 +145,5 @@ public class AuthenticationControllerTests extends AuthenticationController {
                 "validate status code for password '" + password + "'");
         Assert.assertTrue(response.as(ErrorMessageDtoMapStringString.class).getMessage().get("password").contains(expectedFragment),
                 "validate error message for password '" + password + "'");
-    }
-
-    //----------------------------LOGIN: POSITIVE TESTS------------------------------------
-    @Severity(SeverityLevel.BLOCKER)
-    @Story("Successful login")
-    @Test(groups = {"api", "api_smoke"})
-    public void loginPositiveTest() throws IOException {
-        Response response = login(existingUserCredentials());
-        Assert.assertEquals(response.statusCode(), 200, "validate status code");
-        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "TokenDto.json");
-        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
-        Assert.assertFalse(response.as(TokenDto.class).getAccessToken().isBlank(),
-                "validate accessToken is returned");
-    }
-
-    //----------------------------LOGIN: NEGATIVE TESTS------------------------------------
-    // the server answers the same way for every wrong-credentials case
-    // row: case name, user
-    @DataProvider
-    public Object[][] wrongCredentials() {
-        RegistrationBodyDto notRegistered = positiveUser();
-        return new Object[][]{
-                {"wrong password", userWithCredentials(ConfigReader.get("login"), "Wrong123!")},
-                {"user is not registered", userWithCredentials(notRegistered.getUsername(), notRegistered.getPassword())},
-                {"blank username", userWithCredentials("", "Pass123!")}
-        };
-    }
-
-    @Story("Wrong credentials")
-    @Test(groups = "api", dataProvider = "wrongCredentials")
-    public void loginNegativeTest_WrongCredentials(String caseName, AuthenticationBodyDto user) throws IOException {
-        Response response = login(user);
-        Assert.assertEquals(response.statusCode(), 401, "validate status code for " + caseName);
-        // the only test that gets the login 401 answer, so its schema is checked here (for every row)
-        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoString.json");
-        Assert.assertTrue(errors.isEmpty(), "validate json schema for " + caseName + ": " + errors);
-        Assert.assertEquals(response.as(ErrorMessageDtoString.class).getMessage(), "Login or Password incorrect",
-                "validate error message for " + caseName);
     }
 }

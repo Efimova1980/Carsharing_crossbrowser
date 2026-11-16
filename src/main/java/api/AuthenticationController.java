@@ -3,7 +3,6 @@ package api;
 import dto.AuthenticationBodyDto;
 import dto.RegistrationBodyDto;
 import dto.TokenDto;
-import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
 import static io.restassured.RestAssured.given;
@@ -14,27 +13,28 @@ import static io.restassured.RestAssured.given;
  */
 public class AuthenticationController extends BaseApi implements Endpoints {
 
-    @Step("API: register user {user.username}")
     public static Response registration(RegistrationBodyDto user) {
         logger.info("POST {} for user {}", REGISTRATION_PATH, user.getUsername());
-        return given(requestSpec())
+        return given(baseRequestSpecification())
                 .body(user)
                 .post(REGISTRATION_PATH);
     }
 
-    @Step("API: login as {user.username}")
     public static Response login(AuthenticationBodyDto user) {
         logger.info("POST {} for user {}", LOGIN_PATH, user.getUsername());
-        return given(requestSpec())
+        return given(baseRequestSpecification())
                 .body(user)
                 .post(LOGIN_PATH);
     }
 
     // logs in, checks the call succeeded and returns a ready-to-use Authorization header value
-    @Step("API: login and get token for {user.username}")
     public static String loginAndGetToken(AuthenticationBodyDto user) {
         Response response = login(user);
-        response.then().statusCode(200);
+        // a failed login is a broken precondition, not a product defect: Allure shows it as Broken
+        if (response.statusCode() != 200) {
+            throw new IllegalStateException(
+                    "Precondition failed: login as " + user.getUsername() + " returned " + response.statusCode());
+        }
         return "Bearer " + response.as(TokenDto.class).getAccessToken();
     }
 }

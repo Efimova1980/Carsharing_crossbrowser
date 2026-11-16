@@ -29,8 +29,6 @@ dependencies {
     // API tests: REST Assured HTTP client + Jackson for POJO <-> JSON
     implementation 'io.rest-assured:rest-assured:5.5.7'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.2'
-    // attaches request/response of every API call to the Allure report
-    implementation 'io.qameta.allure:allure-rest-assured:2.35.5'
     // validates response bodies against JSON schemas (src/test/resources/schemas), see utils.SchemaValidator
     implementation 'com.networknt:json-schema-validator:1.5.6'
 }

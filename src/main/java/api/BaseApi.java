@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.HttpClientConfig;
 import io.restassured.config.ObjectMapperConfig;
@@ -30,7 +29,7 @@ import java.util.Map;
 public abstract class BaseApi {
     public static final Logger logger = LoggerFactory.getLogger(BaseApi.class);
 
-    // the backend may need time to wake up: the first request can take tens of seconds
+    // upper limit for waiting for the server (by default the client waits forever)
     private static final int TIMEOUT_MS = 60_000;
 
     // the SiftingAppender in logback.xml splits logs by the logName MDC key,
@@ -46,8 +45,8 @@ public abstract class BaseApi {
         MDC.remove("logName");
     }
 
-    // base specification for every request: URI from config, JSON, Allure attachments
-    protected static RequestSpecification requestSpec() {
+    // base specification for every request: URI from config, JSON, request/response logging
+    protected static RequestSpecification baseRequestSpecification() {
         String apiUrl = ConfigReader.get("apiUrl");
         if (apiUrl == null) {
             throw new IllegalStateException(
@@ -56,26 +55,32 @@ public abstract class BaseApi {
         return new RequestSpecBuilder()
                 .setBaseUri(apiUrl)
                 .setContentType(ContentType.JSON)
-                .addFilter(new AllureRestAssured())
+                .addFilter(new ApiLoggingFilter())
                 .setConfig(restAssuredConfig())
                 .build();
     }
 
+    // client settings: how long to wait for a response and the rules for working with JSON
     private static RestAssuredConfig restAssuredConfig() {
         return RestAssuredConfig.config()
-                .objectMapperConfig(ObjectMapperConfig.objectMapperConfig()
-                        .jackson2ObjectMapperFactory((type, charset) -> objectMapper()))
-                .httpClient(HttpClientConfig.httpClientConfig()
+                .objectMapperConfig(ObjectMapperConfig
+                        .objectMapperConfig()
+                        .jackson2ObjectMapperFactory(
+                                (type, charset) -> objectMapper()))
+                .httpClient(HttpClientConfig
+                        .httpClientConfig()
                         .setParams(Map.of(
                                 "http.connection.timeout", TIMEOUT_MS,
                                 "http.socket.timeout", TIMEOUT_MS)));
     }
 
+    // rules for converting DTO to JSON and back:
+    // - a JSON field that the DTO doesn't have is skipped;
+    // - a DTO field equal to null doesn't get into JSON.
     private static ObjectMapper objectMapper() {
         return JsonMapper.builder()
-                // DTOs follow the Swagger schemas; a field the backend adds later must not break the tests
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                // partially built DTOs (e.g. a user without names) must not send nulls
+                .configure(DeserializationFeature
+                        .FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .serializationInclusion(JsonInclude.Include.NON_NULL)
                 .build();
     }

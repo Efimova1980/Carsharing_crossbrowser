@@ -7,11 +7,8 @@ import dto.CarsDto;
 import dto.ErrorMessageDtoMapStringString;
 import dto.ErrorMessageDtoString;
 import dto.ResponseMessageDto;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-import io.qameta.allure.Story;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -32,8 +29,6 @@ import static utils.UserFactory.existingUserCredentials;
 
 @Listeners(TestNGListener.class)
 
-@Epic("API")
-@Feature("Car Controller")
 @Severity(SeverityLevel.CRITICAL)
 public class CarControllerTests extends CarController {
     // serial number of the car a test has added; such a car is deleted after the test
@@ -53,7 +48,6 @@ public class CarControllerTests extends CarController {
 
     //----------------------------SEARCH: POSITIVE TESTS-----------------------------------
     @Severity(SeverityLevel.BLOCKER)
-    @Story("Successful search")
     @Test(groups = {"api", "api_smoke"})
     public void searchPositiveTest() throws IOException {
         Response response = search(positiveSearch());
@@ -75,7 +69,6 @@ public class CarControllerTests extends CarController {
     // expected as in the UI: a search without a city is rejected with a field error
     // known backend bug: answers 200 with an empty list. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: Swagger has no constraints for SearchDto; expected result is taken from the UI
-    @Story("Search validation")
     @Test(groups = "api")
     public void searchNegativeTest_BlankCity() throws IOException {
         Response response = search(blankCitySearch());
@@ -90,7 +83,6 @@ public class CarControllerTests extends CarController {
     // expected as in the UI: city and both dates are required, an empty request is rejected
     // known backend bug: answers 200 with an empty list. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: Swagger has no constraints for SearchDto; expected result is taken from the UI
-    @Story("Search validation")
     @Test(groups = "api")
     public void searchNegativeTest_EmptyBody() throws IOException {
         Response response = search(emptySearch());
@@ -111,7 +103,6 @@ public class CarControllerTests extends CarController {
     // TO CLARIFY: Swagger has no constraints for the dates and does not say which error format
     // a date range error has; a text error is expected (the error is not about one field),
     // change to ErrorMessageDtoMapStringString.json if the backend answers with field errors
-    @Story("Search validation")
     @Test(groups = "api")
     public void searchNegativeTest_EndDateBeforeStartDate() throws IOException {
         Response response = search(endDateBeforeStartDateSearch());
@@ -125,7 +116,6 @@ public class CarControllerTests extends CarController {
     // known backend bug: accepted, cars are returned. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: Swagger has no constraints for the dates and does not say which error format
     // a date range error has; a text error is expected, as for the end date before the start date
-    @Story("Search validation")
     @Test(groups = "api")
     public void searchNegativeTest_SameDays() throws IOException {
         Response response = search(sameDaysSearch());
@@ -139,7 +129,6 @@ public class CarControllerTests extends CarController {
     // known backend bug: accepted, cars are returned. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: Swagger has no constraints for the dates and does not say which error format
     // a date error has; a text error is expected, as for the end date before the start date
-    @Story("Search validation")
     @Test(groups = "api")
     public void searchNegativeTest_DatesInPast() throws IOException {
         Response response = search(datesInPastSearch());
@@ -151,7 +140,6 @@ public class CarControllerTests extends CarController {
 
     //----------------------------ADD CAR: POSITIVE TESTS----------------------------------
     @Severity(SeverityLevel.BLOCKER)
-    @Story("Add car with valid data")
     @Test(groups = {"api", "api_smoke"})
     public void addCarPositiveTest() throws IOException {
         CarDto car = positiveCar();
@@ -165,7 +153,6 @@ public class CarControllerTests extends CarController {
     }
 
     //----------------------------ADD CAR: NEGATIVE TESTS----------------------------------
-    @Story("Add car validation")
     @Test(groups = "api")
     public void addCarNegativeTest_MissingSerialNumber() throws IOException {
         CarDto car = positiveCar();
@@ -182,7 +169,6 @@ public class CarControllerTests extends CarController {
     // with an error body like for an invalid token
     // known backend bug: answers 403 with an empty body. The test fails until the bug is fixed (product defect).
     // TO CLARIFY: the error body format for a missing token is not specified in Swagger
-    @Story("Authorization")
     @Test(groups = "api")
     public void addCarNegativeTest_NoToken() throws IOException {
         Response response = addCarWithoutToken(positiveCar());
@@ -191,7 +177,6 @@ public class CarControllerTests extends CarController {
         Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
     }
 
-    @Story("Authorization")
     @Test(groups = "api")
     public void addCarNegativeTest_InvalidToken() throws IOException {
         Response response = addCar(positiveCar(), "Bearer garbage.token.here");
@@ -206,7 +191,6 @@ public class CarControllerTests extends CarController {
     // the car is created by this test, so nothing else is deleted; the answer text is not
     // specified in Swagger, so the result is checked by the user's car list instead
     @Severity(SeverityLevel.BLOCKER)
-    @Story("Delete car")
     @Test(groups = {"api", "api_smoke"})
     public void deleteCarPositiveTest() throws IOException {
         String token = loginAndGetToken(existingUserCredentials());
@@ -230,7 +214,6 @@ public class CarControllerTests extends CarController {
     // known backend bug: answers 403, as for adding a car without a token.
     // The test fails until the bug is fixed (product defect).
     // TO CLARIFY: the error body format for a missing token is not specified in Swagger
-    @Story("Authorization")
     @Test(groups = "api")
     public void deleteCarNegativeTest_NoToken() throws IOException {
         Response response = deleteCarWithoutToken(notExistingSerialNumber());
@@ -243,7 +226,6 @@ public class CarControllerTests extends CarController {
     // TO CLARIFY: REST convention is 404 Not Found, but Swagger documents only 200/400/401/500
     // for this endpoint, so 400 with a text error is expected; change to 404 if the backend
     // is meant to answer so
-    @Story("Delete car")
     @Test(groups = "api")
     public void deleteCarNegativeTest_NotExistingCar() throws IOException {
         Response response = deleteCar(notExistingSerialNumber(), loginAndGetToken(existingUserCredentials()));
