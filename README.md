@@ -193,8 +193,8 @@ Every Grid session is named after the test (`ClassName.testName`), so it is easy
 
 ## Reports and logs
 
-**Example report:** [Allure report of a cross-browser regression run on Selenium Grid](https://efimova1980.github.io/Carsharing_crossbrowser/allure-report/)
-(Chrome, Firefox, Edge; screenshots are not included).
+**Latest report:** [Allure report of the last GitHub Actions run](https://efimova1980.github.io/Carsharing_crossbrowser/)
+(published by the workflow; screenshots and logs are not published).
 
 | What         | Where                                                        |
 |--------------|--------------------------------------------------------------|
