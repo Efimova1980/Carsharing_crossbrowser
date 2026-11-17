@@ -32,6 +32,7 @@ public class FindYourCarTests extends AppManager {
         LocalDate startDate = LocalDate.now().plusDays(10);
         LocalDate endDate = LocalDate.now().plusDays(20);
         homePage.typeFindYourCarForm(city, startDate, endDate);
+        Assert.assertTrue(homePage.isBtnYallaEnabled(), "validate button Yalla is enabled when all fields are valid");
         homePage.clickBtnYalla();
         Assert.assertTrue(homePage.isUrlContains("results",2));
     }
@@ -39,11 +40,12 @@ public class FindYourCarTests extends AppManager {
     // dates are picked in the calendar, not typed
     @Severity(SeverityLevel.CRITICAL)
     @Test(groups = "regression")
-    public void findYourCarPositiveTestWithCalandar(){
+    public void findYourCarPositiveTestWithCalendar(){
         String city = "Rehovot";
         LocalDate startDate = LocalDate.now().plusDays(10);
         LocalDate endDate = LocalDate.now().plusDays(20);
-        homePage.typeFindYourCarFormWithCalandar(city, startDate, endDate);
+        homePage.typeFindYourCarFormWithCalendar(city, startDate, endDate);
+        Assert.assertTrue(homePage.isBtnYallaEnabled(), "validate button Yalla is enabled when all fields are valid");
         homePage.clickBtnYalla();
         Assert.assertTrue(homePage.isUrlContains("results",2));
     }

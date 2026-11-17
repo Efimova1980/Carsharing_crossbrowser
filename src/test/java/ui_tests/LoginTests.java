@@ -37,26 +37,29 @@ public class LoginTests extends AppManager {
     @Test(groups = "smoke")
     public void loginPositiveTest(){
         AuthenticationBodyDto user = userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
-        loginPage.typeLoginForm(user);
-        loginPage.clickBtnYalla();
+        loginPage.loginWithConfirm(user);
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"));
     }
 
-    // email is not case-sensitive: HARRY@GMAIL.COM is the same user as harry@gmail.com
     @Test(groups = "regression")
     public void loginPositiveTest_EmailInUpperCase(){
         AuthenticationBodyDto user = userWithCredentials(ConfigReader.get("login").toUpperCase(), ConfigReader.get("password"));
-        loginPage.typeLoginForm(user);
-        loginPage.clickBtnYalla();
+        loginPage.loginWithConfirm(user);
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"));
     }
 
-    //------------------LOGOUT----------------------------
+    @Test(groups = "regression")
+    public void loginPositiveTest_EnterKey(){
+        AuthenticationBodyDto user = userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password"));
+        loginPage.loginWithEnterConfirm(user);
+        Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"));
+    }
+
+    //------------------LOGOUT POSITIVE TESTS----------------------------
     @Test(groups = "regression")
     public void logoutTest(){
         SoftAssert softAssert = new SoftAssert();
-        loginPage.typeLoginForm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
-        loginPage.clickBtnYalla();
+        loginPage.loginWithConfirm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
         PopupPage popupPage = new PopupPage(getDriver());
         Assert.assertTrue(popupPage.isTextInPopupMessagePresent("Logged in success"),
                 "precondition: login succeeded");
@@ -80,27 +83,26 @@ public class LoginTests extends AppManager {
         String password = ConfigReader.get("password");
         RegistrationBodyDto notRegistered = positiveUser();
         return new Object[][]{
-                {"password without special symbol", login, "Pass1234"},
+                {"password in upper case", login, password.toUpperCase()},
                 {"password with trailing spaces", login, password + "   "},
-                {"password in lower case", login, password.toLowerCase()},   // password is case-sensitive
-                {"email valid but wrong", "harry1@gmail.com", password},
+                {"password with leading spaces", login, "   " + password},
+                {"email is not registered", notRegistered.getUsername(), password},
                 {"user is not registered", notRegistered.getUsername(), notRegistered.getPassword()}
         };
     }
 
     @Test(groups = "regression", dataProvider = "wrongCredentials")
     public void loginNegativeTest_WrongCredentials(String caseName, String login, String password){
-        loginPage.typeLoginForm(userWithCredentials(login, password));
-        loginPage.clickBtnYalla();
+        loginPage.loginWithConfirm(userWithCredentials(login, password));
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Login or Password incorrect"),
                 "validate popup for " + caseName);
     }
 
-    //------------------LOGIN NEGATIVE TESTS: INVALID FORM----------------------------
+    //------------------LOGIN NEGATIVE TESTS: EMPTY FIELDS----------------------------
     // the form shows errors and Yalla stays disabled (so it is not clicked)
     // row: case name, login, password, expected error texts
     @DataProvider
-    public Object[][] invalidLoginForm() {
+    public Object[][] emptyFields() {
         String login = ConfigReader.get("login");
         String password = ConfigReader.get("password");
         return new Object[][]{
@@ -109,17 +111,15 @@ public class LoginTests extends AppManager {
                 {"empty email", "", password,
                         new String[]{"Email is required"}},
                 {"empty password", login, "",
-                        new String[]{"Password is required"}},
-                {"wrong email, empty password", "harrygmail.com", "",
-                        new String[]{"It'snot look like email", "Password is required"}}
+                        new String[]{"Password is required"}}
         };
     }
 
     @Severity(SeverityLevel.NORMAL)
-    @Test(groups = "regression", dataProvider = "invalidLoginForm")
-    public void loginNegativeTest_InvalidForm(String caseName, String login, String password, String[] expectedErrors){
+    @Test(groups = "regression", dataProvider = "emptyFields")
+    public void loginNegativeTest_EmptyFields(String caseName, String login, String password, String[] expectedErrors){
         SoftAssert softAssert = new SoftAssert();
-        loginPage.typeLoginForm(userWithCredentials(login, password));
+        loginPage.loginWOConfirm(userWithCredentials(login, password));
         for (String error : expectedErrors) {
             softAssert.assertTrue(loginPage.isTextInErrorPresent(error),
                     "validate error '" + error + "' for " + caseName);

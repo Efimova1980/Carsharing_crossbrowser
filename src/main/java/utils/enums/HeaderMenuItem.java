@@ -6,8 +6,7 @@ public enum HeaderMenuItem {
     TERMS_OF_USE("//a[@ng-reflect-router-link='terms-of-use']"),
     SIGN_UP("//a[@ng-reflect-router-link='registration']"),
     LOGIN("//a[@ng-reflect-router-link='login']"),
-    LOG_OUT("//a[@ng-reflect-router-link='logout']"),
-    DELETE_ACCAUNT("//a[text()='Delete account']");
+    LOG_OUT("//a[@ng-reflect-router-link='logout']");
 
     private final String locator;
 

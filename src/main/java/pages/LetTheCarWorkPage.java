@@ -6,13 +6,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-
-import java.io.File;
-import java.time.Duration;
 
 public class LetTheCarWorkPage extends BasePage {
     public LetTheCarWorkPage(WebDriver driver) {
@@ -42,8 +35,6 @@ public class LetTheCarWorkPage extends BasePage {
     WebElement inputPrice;
     @FindBy(xpath = "//textarea[@id='about']")
     WebElement inputAbout;
-    @FindBy(xpath = "//input[@type='file']")
-    WebElement inputFile;
     @FindBy(xpath = "//button[@type='submit']")
     WebElement btnSubmit;
 
@@ -59,7 +50,6 @@ public class LetTheCarWorkPage extends BasePage {
         inputSerialNumber.sendKeys(car.getSerialNumber());
         inputPrice.sendKeys(Double.toString(car.getPricePerDay()));
         inputAbout.sendKeys(car.getAbout());
-        //typeImage(car.getImage());
     }
 
 
@@ -78,19 +68,6 @@ public class LetTheCarWorkPage extends BasePage {
     public void typePrice(String s) {
         inputPrice.clear();
         inputPrice.sendKeys(s);
-    }
-
-    public void typeImage(String img) {
-        File photo = new File(img);
-        inputFile.sendKeys(photo.getAbsolutePath());
-        pause(3);
-    }
-
-    public void clickBtnSubmit_WithJS(){
-        JavascriptExecutor js = (JavascriptExecutor) getDriver();
-        js.executeScript("document.querySelector(\"button[type='submit']\")" +
-                ".removeAttribute(\"disabled\")");
-        btnSubmit.click();
     }
 
     // fuel is the option value as in CarDto: "Diesel", "Petrol", ...

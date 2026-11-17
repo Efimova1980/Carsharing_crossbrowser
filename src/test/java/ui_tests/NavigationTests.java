@@ -81,8 +81,7 @@ public class NavigationTests extends AppManager {
     @Test(groups = "regression")
     public void HeaderNavigationTest_LetTheCarWorkBtn(){
         LoginPage loginPage = new HomePage(getDriver()).getHeader().click(HeaderMenuItem.LOGIN);
-        loginPage.typeLoginForm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
-        loginPage.clickBtnYalla();
+        loginPage.loginWithConfirm(userWithCredentials(ConfigReader.get("login"), ConfigReader.get("password")));
         // wait until login is finished, otherwise HomePage may open before the user is logged in
         Assert.assertTrue(new PopupPage(getDriver()).isTextInPopupMessagePresent("Logged in success"),
                 "precondition: login succeeded");

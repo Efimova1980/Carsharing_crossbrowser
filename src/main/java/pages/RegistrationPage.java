@@ -4,8 +4,6 @@ import dto.RegistrationBodyDto;
 import org.openqa.selenium.*;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.FindBy;
-import org.openqa.selenium.support.PageFactory;
-import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
 
 public class RegistrationPage extends BasePage{
     public RegistrationPage(WebDriver driver) {
@@ -24,21 +22,11 @@ public class RegistrationPage extends BasePage{
     WebElement checkBoxAgreeInput;
     @FindBy(xpath="//label[@for='terms-of-use']")
     WebElement checkBoxAgreeLabel;
-    @FindBy(xpath = "//button[@type='submit']")
-    WebElement btnYalla;
-    @FindBy(xpath = "//h2[text()='You are logged in success']")
-    WebElement popupRegistred;
 
     By btnYalla_locator = By.xpath("//button[@type='submit']");
 
-
     public void clickYalla(){
         click(btnYalla_locator);
-    }
-
-    public void setCheckBoxAgree_WithJavascript(boolean value){
-        if (checkBoxAgreeInput.isSelected() != value)
-            ((JavascriptExecutor) getDriver()).executeScript("arguments[0].click();", checkBoxAgreeInput);
     }
 
     public void setCheckBoxAgree_WithActions(boolean value){
@@ -68,6 +56,6 @@ public class RegistrationPage extends BasePage{
     }
 
     public boolean isBtnYallaEnabled(){
-        return isElementEnabled(btnYalla);
+        return isElementEnabled(getDriver().findElement(btnYalla_locator));
     }
 }

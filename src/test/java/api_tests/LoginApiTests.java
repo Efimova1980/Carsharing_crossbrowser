@@ -1,7 +1,6 @@
 package api_tests;
 
 import api.AuthenticationController;
-import com.networknt.schema.ValidationMessage;
 import dto.ErrorMessageDtoString;
 import dto.RegistrationBodyDto;
 import dto.TokenDto;
@@ -15,9 +14,8 @@ import utils.ConfigReader;
 import utils.TestNGListener;
 
 import java.io.IOException;
-import java.util.Set;
 
-import static utils.SchemaValidator.validateJsonSchema;
+import static utils.SchemaValidator.assertJsonSchema;
 import static utils.UserFactory.*;
 
 @Listeners(TestNGListener.class)
@@ -31,8 +29,7 @@ public class LoginApiTests extends AuthenticationController {
     public void loginPositiveTest() throws IOException {
         Response response = login(existingUserCredentials());
         Assert.assertEquals(response.statusCode(), 200, "validate status code");
-        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "TokenDto.json");
-        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        assertJsonSchema(response, "TokenDto.json");
         Assert.assertFalse(response.as(TokenDto.class).getAccessToken().isBlank(),
                 "validate accessToken is returned");
     }
@@ -41,7 +38,7 @@ public class LoginApiTests extends AuthenticationController {
     // no data provider: Allure shows test parameters, and the login of the config user must not get into the report
     @Test(groups = "api")
     public void loginNegativeTest_WrongPassword() throws IOException {
-        Response response = login(userWithCredentials(ConfigReader.get("login"), "Wrong123!"));
+        Response response = login(userWithCredentials(ConfigReader.get("login"), positivePassword()));
         checkWrongCredentialsAnswer(response);
     }
 
@@ -54,7 +51,7 @@ public class LoginApiTests extends AuthenticationController {
 
     @Test(groups = "api")
     public void loginNegativeTest_BlankUsername() throws IOException {
-        Response response = login(userWithCredentials("", "Pass123!"));
+        Response response = login(userWithCredentials("", positivePassword()));
         checkWrongCredentialsAnswer(response);
     }
 
@@ -62,8 +59,7 @@ public class LoginApiTests extends AuthenticationController {
     // these are the only tests that get the login 401 answer, so its schema is checked here
     private void checkWrongCredentialsAnswer(Response response) throws IOException {
         Assert.assertEquals(response.statusCode(), 401, "validate status code");
-        Set<ValidationMessage> errors = validateJsonSchema(response.asString(), "ErrorMessageDtoString.json");
-        Assert.assertTrue(errors.isEmpty(), "validate json schema: " + errors);
+        assertJsonSchema(response, "ErrorMessageDtoString.json");
         Assert.assertEquals(response.as(ErrorMessageDtoString.class).getMessage(), "Login or Password incorrect",
                 "validate error message");
     }

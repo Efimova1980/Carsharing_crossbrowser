@@ -1,6 +1,5 @@
 package pages;
 
-import enums.Months;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -57,9 +56,6 @@ public class HomePage extends BasePage {
     public void typeFindYourCarForm(String city, LocalDate startDate, LocalDate endDate) {
         type(inputCity_locator, city);
         setDateRange(startDate, endDate);
-        JavascriptExecutor js = (JavascriptExecutor) getDriver();
-        js.executeScript("document.querySelector(\"button[type='submit']\")" +
-                ".removeAttribute(\"disabled\")");
     }
 
     public void typeFindYourCarForm_WOJavascript(String city, LocalDate startDate, LocalDate endDate) {
@@ -72,11 +68,6 @@ public class HomePage extends BasePage {
 
     //CALENDAR--------------------------------------------------
 
-    private void typeMonth(Months month) {
-        WebElement btnMonth = getDriver().findElement(By.xpath(month.getLocator()));
-        btnMonth.click();
-    }
-
     private void typeCalendar(LocalDate date) {
         click(btnChooseMonthYear_locator);
         //td[@aria-label="2026"]
@@ -85,11 +76,7 @@ public class HomePage extends BasePage {
                 .xpath("//td[@aria-label='" + year + "']"));
         btnYear.click();
 
-//by enum
-//        int month = date.getMonth().getValue();
-//        typeMonth(Months.values()[month-1]);
-
-        //td[@aria-label="March 2026"] //another locator for month
+        //td[@aria-label="March 2026"]
         StringBuilder month = new StringBuilder();
         month.append(date.getMonth().toString().substring(0, 1).toUpperCase())
                 .append(date.getMonth().toString().substring(1).toLowerCase());
@@ -97,13 +84,7 @@ public class HomePage extends BasePage {
                 .xpath("//td[@aria-label='" + month + " " + year + "']"));
         btnMonth.click();
 
-        //div[text()=' 1 ']
-//        String day = Integer.toString(date.getDayOfMonth());
-//        WebElement btnDay = driver.findElement(By
-//                .xpath("//div[text()=' " + day + " ']"));
-//        btnDay.click();
-
-        //td[@aria-label="March 18, 2026"] //another locator for day
+        //td[@aria-label="March 18, 2026"]
         StringBuilder day = new StringBuilder();
         day.append(date.getDayOfMonth());
         WebElement btnDay = getDriver().findElement(By
@@ -111,16 +92,12 @@ public class HomePage extends BasePage {
         btnDay.click();
     }
 
-    public void typeFindYourCarFormWithCalandar(String city, LocalDate startDate, LocalDate endDate) {
+    public void typeFindYourCarFormWithCalendar(String city, LocalDate startDate, LocalDate endDate) {
         type(inputCity_locator, city);
         closeGoogleMapsErrorIfVisible();   // otherwise the dialog may cover Dates
         click(inputDates_locator);
         typeCalendar(startDate);
         typeCalendar(endDate);
-
-        JavascriptExecutor js = (JavascriptExecutor) getDriver();
-        js.executeScript("document.querySelector(\"button[type='submit']\")" +
-                ".removeAttribute(\"disabled\")");
     }
 
     public boolean isTitlePresentOnClickIconFooter(FooterMenuItem item, String title) {

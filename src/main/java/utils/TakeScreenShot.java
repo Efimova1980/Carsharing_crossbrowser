@@ -32,8 +32,8 @@ public class TakeScreenShot {
 
     // browser and test name in the file name: parallel tests don't overwrite each other's screenshots
     private static String createFileName(String browser, String testName) {
-        SimpleDateFormat formater = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss-SSS");
-        String currentDate = formater.format(new Date(System.currentTimeMillis()));
+        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy_HH-mm-ss-SSS");
+        String currentDate = formatter.format(new Date(System.currentTimeMillis()));
         return "build/screenshots/scr-" + browser + "-" + testName + "-" + currentDate + ".png";
     }
 }

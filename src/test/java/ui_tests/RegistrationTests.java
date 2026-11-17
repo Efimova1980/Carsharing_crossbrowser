@@ -100,7 +100,9 @@ public class RegistrationTests extends AppManager {
     public void registrationNegativeTest_InvalidPassword(String password, String expectedError){
         RegistrationBodyDto user = positiveUser();
         user.setPassword(password);
-        checkFormRejected(user, expectedError, "password '" + password + "'");
+        registrationPage.typeRegistrationForm(user);
+        registrationPage.setCheckBoxAgree_WithActions(true);
+        assertErrorAndYallaDisabled(expectedError, "password '" + password + "'");
     }
 
     //------------------------------INVALID EMAIL------------------------------------------
@@ -153,14 +155,14 @@ public class RegistrationTests extends AppManager {
     public void registrationNegativeTest_InvalidEmail(String email, String expectedError){
         RegistrationBodyDto user = positiveUser();
         user.setUsername(email);
-        checkFormRejected(user, expectedError, "email '" + email + "'");
-    }
-
-    // fills the form with one wrong field: the error must be shown and Yalla must stay disabled
-    private void checkFormRejected(RegistrationBodyDto user, String expectedError, String field){
-        SoftAssert softAssert = new SoftAssert();
         registrationPage.typeRegistrationForm(user);
         registrationPage.setCheckBoxAgree_WithActions(true);
+        assertErrorAndYallaDisabled(expectedError, "email '" + email + "'");
+    }
+
+    // the field error is shown and Yalla stays disabled
+    private void assertErrorAndYallaDisabled(String expectedError, String field){
+        SoftAssert softAssert = new SoftAssert();
         softAssert.assertTrue(registrationPage.isTextInErrorPresent(expectedError),
                 "validate error '" + expectedError + "' for " + field);
         softAssert.assertFalse(registrationPage.isBtnYallaEnabled(),

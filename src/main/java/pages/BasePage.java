@@ -1,42 +1,37 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.pagefactory.AjaxElementLocatorFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.enums.HeaderMenuItem;
 
 import java.time.Duration;
-import java.util.List;
 
 import static manager.AppManager.logger;
 
 public abstract class BasePage {
+    // field errors of all fields on the page
+    By errors_locator = By.cssSelector(".error");
+    // field errors appear right after the field loses focus: a short wait is enough
+    private static final Duration ERROR_WAIT = Duration.ofSeconds(5);
 
-    @FindBy(css = ".error")
-    List<WebElement> listErrors;
-    //    @FindBy(xpath = "//div[@class='error']")
-    //    List<WebElement> listErrors;
-
-    private WebDriver driver; //!
-    private WebDriverWait wait; //!
+    private WebDriver driver;
+    private WebDriverWait wait;
     protected Header header;
-
 
     public BasePage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20)); //!
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         this.header = new Header(driver);
-        PageFactory.initElements(new AjaxElementLocatorFactory(driver, 20),this);//!
+        PageFactory.initElements(new AjaxElementLocatorFactory(driver, 20),this);
     }
 
-    //--------------------------------getters , setters -----------------------
     protected WebDriver getDriver() {
         return driver;
     }
@@ -45,16 +40,10 @@ public abstract class BasePage {
         return wait;
     }
 
-//    public static void setDriver(WebDriver driver) {
-//        //BasePage.driver = driver;
-//    }
-
     public Header getHeader() {
         return header;
     }
 
-
-    //----------------------------------base actions---------------------------------------------
     protected void click(By locator) {
         logger.info("clicking on element" + locator.toString());
         // 1. is element exist
@@ -74,34 +63,14 @@ public abstract class BasePage {
         }
     }
 
-    protected static void pause(int time){
-        try {
-            Thread.sleep(time * 1000L);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    //----------------------------------------------------------------------------------------------------
-
+    // waits until one of the field errors contains the text; false (not TimeoutException) if none does,
+    // so the test fails on its assert and Allure shows a product defect, not a broken test
     public boolean isTextInErrorPresent(String text){
-        if (listErrors == null || listErrors.isEmpty())
-            return false;
-        for (WebElement element:listErrors) {
-            if (element.getText().contains(text))
-                return true;
-        }
-        return false;
-    }
-
-    protected boolean isElementDisplayed(WebElement element){
-        return element.isDisplayed();
-    }
-
-    // false (not TimeoutException) when the text didn't appear: the test fails on its assert,
-    // and Allure shows it as a product defect, not a broken test
-    protected boolean isTextInElementPresentWait(WebElement element, String text){
         try {
-            return wait.until(ExpectedConditions.textToBePresentInElement(element, text));
+            return new WebDriverWait(driver, ERROR_WAIT)
+                    .ignoring(StaleElementReferenceException.class)
+                    .until(d -> d.findElements(errors_locator).stream()
+                            .anyMatch(e -> e.getText().contains(text)));
         } catch (TimeoutException e) {
             return false;
         }
@@ -110,10 +79,6 @@ public abstract class BasePage {
     protected boolean isElementEnabled(WebElement element){
         return element.isEnabled();
     }
-
-//    public void clickWait(WebElement element, int time){
-//        wait.until(ExpectedConditions.elementToBeClickable(element)).click();
-//    }
 
     public boolean isUrlContains(String partOfUrl, int time){
         try {

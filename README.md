@@ -1,8 +1,8 @@
 # Carsharing cross-browser UI and API tests
 
 Automated UI and API tests for a carsharing web app.
-The UI tests run in **Chrome, Firefox and Edge**, in parallel, either locally or on a
-remote **Selenium Grid** in Docker. The API tests call the site's REST backend directly,
+The UI tests run in **Chrome, Firefox and Edge**, in parallel, on a **Selenium Grid** in Docker
+started by GitHub Actions. The API tests call the site's REST backend directly,
 no browser needed. Results are shown in an **Allure** report.
 
 ## Tech stack
@@ -37,19 +37,20 @@ src/main/java
 ├── dto/                     # data models named and built as the backend Swagger schemas
 │                            # (RegistrationBodyDto, AuthenticationBodyDto, CarDto, SearchDto, ...);
 │                            # the same models fill the UI forms and are sent/received by the API tests
-├── enums/                   # Fuel, Months
 └── utils/                   # ConfigReader, UserFactory, CarFactory, SearchFactory,
-                             # SchemaValidator, listeners, screenshots
+                             # SchemaValidator, listeners, screenshots;
+                             # enums/: Fuel, HeaderMenuItem, FooterMenuItem
 src/main/resources
-└── config.properties        # default settings (not in git, see below)
+└── config.properties        # settings for local runs (not in git; in CI they come from secrets)
 src/test/java
 ├── ui_tests/                # UI test classes
 └── api_tests/               # API test classes (no browser)
 src/test/resources
 ├── smoketests.xml               # smoke, one browser
 ├── regressiontests.xml          # smoke + regression, one browser
-├── crossbrowser.xml             # smoke, 3 browsers in parallel
-├── crossbrowser_regression.xml  # smoke + regression, 3 browsers in parallel
+├── crossbrowser_smoke.xml       # smoke, 3 browsers in parallel
+├── crossbrowser_regression_parallel.xml    # smoke + regression, 3 browsers in parallel
+├── crossbrowser_regression_sequential.xml  # the same, browsers one after another
 ├── apitests.xml                 # API tests, no browser
 ├── schemas/                     # JSON schemas of the API answers, one file per Swagger schema
 ├── logback.xml
@@ -73,7 +74,9 @@ API tests (call the site's REST backend directly, endpoints and models as in the
 |------------------------|------------------------------------------------------------|
 | `RegistrationApiTests` | registration: positive, already registered user, blank email, blank password, invalid emails and passwords (data providers) |
 | `LoginApiTests`        | login: token in the answer, wrong credentials              |
-| `CarControllerTests`   | search: positive, blank city, empty request, end date before start date, the same day, dates in the past; adding a car: positive, missing field, no/invalid token; deleting a car: positive (checked in the user's car list), no token, not existing car |
+| `SearchApiTests`       | search: positive, blank city, empty request, end date before start date, the same day, dates in the past |
+| `AddCarApiTests`       | adding a car: positive, missing field, no/invalid token     |
+| `DeleteCarApiTests`    | deleting a car: positive (checked in the user's car list), no token, not existing car |
 
 How the API tests check an answer:
 
@@ -81,128 +84,40 @@ How the API tests check an answer:
 2. **JSON schema** of the body (`utils.SchemaValidator`), once per endpoint + status code;
 3. **values** (error text, token, found cars).
 
-Expected results come from Swagger or, where Swagger has no constraint, from the UI behaviour.
-Such assumptions are marked `TO CLARIFY` in the test comments.
-Tests create as little data as possible: checks that need a user use the existing user
-from `config.properties`, and a car added by a test is deleted after it.
+Tests create as little data as possible: checks that need a user use one existing test user,
+and a car added by a test is deleted after it.
 
 Groups: `smoke`, `regression`, `external` (links to other sites), `api`, `api_smoke`.
 
-> Some tests fail because of **known bugs** of the site. The tests check the expected behaviour,
-> so they stay red until the bugs are fixed and keep the bugs visible in the report.
->
-> - UI: an email with a Cyrillic domain is accepted, login is case-sensitive to the email.
-> - API: an email with a Cyrillic domain is accepted; search accepts a blank city, an empty request,
->   an end date before the start date, the same start and end day and dates in the past;
->   a blank password is answered in another error format;
->   a request without a token gets 403 instead of 401 (add and delete a car).
+> Some tests are red because they catch existing bugs of the site.
 
-## Setup
+## Running on GitHub Actions
 
-1. Install **JDK 21** and the browsers you want to test (for local runs).
-   Browser drivers are downloaded automatically by Selenium Manager.
-2. Create `src/main/resources/config.properties` (it is ignored by git because it has credentials):
+The tests run in GitHub Actions: **Actions → Tests → Run workflow**, then choose what to run.
+The run is started by hand only (`workflow_dispatch`).
 
-   ```properties
-   baseUrl=https://<site-under-test>
-   apiUrl=https://<rest-backend-of-the-site>
-   browser=chrome
-   # empty = run locally; http://localhost:4444 = run on Selenium Grid
-   gridUrl=
-   headless=false
-   # an existing user of the site
-   login=your_user@example.com
-   password=YourPassword1!
-   ```
+| Option                               | What runs                                                   |
+|--------------------------------------|-------------------------------------------------------------|
+| `crossbrowser_regression_parallel`   | smoke + regression in Chrome, Firefox and Edge in parallel  |
+| `crossbrowser_regression_sequential` | the same, browsers one after another (to compare the time)  |
+| `crossbrowser_smoke`                 | smoke in Chrome, Firefox and Edge in parallel               |
+| `apitests`                           | API tests, no browser                                       |
+| `all`                                | `crossbrowser_regression_parallel` + `apitests`             |
 
-## Configuration
+What the workflow does:
 
-Settings are read by `ConfigReader`. A value given on the command line with `-D`
-wins over `config.properties`:
+1. starts the Selenium Grid from `docker-compose.yml` on the GitHub runner (hub + Chrome, Firefox, Edge);
+2. runs the chosen tests; failed tests do not stop the others;
+3. builds the Allure report and publishes it to GitHub Pages, even if tests failed.
 
-| Key        | Meaning                                         |
-|------------|-------------------------------------------------|
-| `browser`  | `chrome`, `firefox` or `edge`                   |
-| `gridUrl`  | Selenium Grid address; empty = local browsers   |
-| `baseUrl`  | site under test                                 |
-| `headless` | `true` = run browsers without a window          |
-| `login`, `password` | an existing user of the site           |
-| `apiUrl`   | REST backend of the site, used by the API tests |
+The site address and the test user are passed from repository secrets
+(`BASE_URL`, `API_URL`, `LOGIN`, `PASSWORD`), so they are not in the code, the logs or the report.
+Logs and screenshots stay on the runner and are not published.
 
-In the cross-browser suites the browser comes from the suite file (`<parameter name="browser">`).
-
-## Running tests
-
-On Windows use `.\gradlew`, on Linux/macOS `./gradlew`.
-
-| Command                                  | What runs                                     |
-|------------------------------------------|-----------------------------------------------|
-| `.\gradlew test`                         | all UI tests in one browser (Chrome by default) and all API tests, test classes in parallel |
-| `.\gradlew smoketests`                   | smoke, one browser                            |
-| `.\gradlew regressiontests`              | smoke + regression, one browser               |
-| `.\gradlew crossbrowser`                 | smoke in Chrome, Firefox and Edge in parallel |
-| `.\gradlew crossbrowser_regression`      | everything in 3 browsers in parallel          |
-| `.\gradlew apitests`                     | API tests (no browser and no Grid needed)     |
-
-Examples:
-
-```bash
-.\gradlew clean smoketests -Dbrowser=firefox -Dheadless=true
-```
-
-```bash
-.\gradlew clean crossbrowser_regression -DgridUrl=http://localhost:4444
-```
-
-## Selenium Grid
-
-To run tests on the Grid you need a **server (or any computer) with Docker and Docker Compose**.
-Our setup: a cloud VM with Ubuntu 24.04, 4 vCPU, 8 GB RAM; the server firewall allows only SSH (port 22).
-Plan about 1 CPU core and 1–2 GB RAM per browser running at the same time.
-
-`docker-compose.yml` starts a hub and one node per browser (Chrome, Firefox, Edge,
-1 session each). Image versions match `selenium-java` in `build.gradle`.
-Docker Compose creates the Docker network for these containers automatically: the nodes find
-the hub by its service name `selenium-hub` and register through the event bus (ports 4442/4443
-inside the network). No manual network setup is needed.
-
-Copy `docker-compose.yml` to the server and start the Grid:
-
-```bash
-docker compose up -d
-```
-
-```bash
-docker compose ps
-```
-
-Grid port 4444 is published on `127.0.0.1` only: the grid has no password and must not be
-open to the internet. Connect from your computer through an SSH tunnel and keep it open
-while tests run:
-
-```bash
-ssh -N -L 4444:localhost:4444 root@<server-ip>
-```
-
-Then:
-
-- Grid UI: http://localhost:4444/ui/ (with the slash at the end)
-- run tests with `-DgridUrl=http://localhost:4444`
-
-Every Grid session is named after the test (`ClassName.testName`), so it is easy to find in the Grid UI.
-
-## Reports and logs
+## Report
 
 **Latest report:** [Allure report of the last GitHub Actions run](https://efimova1980.github.io/Carsharing_crossbrowser/)
 (published by the workflow; screenshots and logs are not published).
-
-| What         | Where                                                        |
-|--------------|--------------------------------------------------------------|
-| Allure report | `.\gradlew allureServe` (opens in the browser) or `.\gradlew allureReport` → `build/reports/allure-report/allureReport/index.html` |
-| Allure results | `build/allure-results`                                     |
-| Screenshots  | `build/screenshots` (failed tests only; not attached to Allure) |
-| Logs         | `build/logs` (common log and one log per browser)            |
-| Gradle report | `build/reports/tests`                                       |
 
 In Allure, tests are grouped by browser and test class (Suites);
 failed tests are split into **Product defects** (assertion failed) and **Test defects** (errors in the test or environment).

@@ -1,13 +1,13 @@
 package utils;
 
 import dto.CarDto;
-import enums.Fuel;
+import utils.enums.Fuel;
 import net.datafaker.Faker;
 
 public class CarFactory {
     static Faker faker = new Faker();
     public static CarDto positiveCar(){
-        CarDto car = CarDto.builder()
+        return CarDto.builder()
                 .city("Rehovot")
                 .manufacture(faker.vehicle().manufacturer())
                 .model(faker.vehicle().model())
@@ -19,7 +19,6 @@ public class CarFactory {
                 .pricePerDay(faker.number().randomDouble(2,1, 999))
                 .about(faker.text().text(0, 500))
                 .build();
-        return car;
     }
 
     // a serial number no car can have: unique per call, unlike a random license plate

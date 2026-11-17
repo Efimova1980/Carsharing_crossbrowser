@@ -1,6 +1,7 @@
 package api;
 
 import dto.CarDto;
+import dto.CarsDto;
 import dto.SearchDto;
 import io.restassured.response.Response;
 
@@ -55,5 +56,17 @@ public class CarController extends BaseApi implements Endpoints {
         return given(baseRequestSpecification())
                 .header("Authorization", bearerToken)
                 .get(MY_CARS_PATH);
+    }
+
+    // cleanup after a test: deletes the car only if it is in the user's cars;
+    // a failed delete is only logged, it must not break the next tests
+    public static void deleteCarIfExists(String serialNumber, String bearerToken) {
+        boolean exists = getUserCars(bearerToken).as(CarsDto.class).getCars().stream()
+                .anyMatch(c -> serialNumber.equals(c.getSerialNumber()));
+        if (exists) {
+            Response response = deleteCar(serialNumber, bearerToken);
+            if (response.statusCode() != 200)
+                logger.warn("Cleanup: car {} was not deleted, status {}", serialNumber, response.statusCode());
+        }
     }
 }

@@ -1,4 +1,4 @@
-package enums;
+package utils.enums;
 
 // fuel types of the site; value is the string the site and the API use (CarDto.fuel)
 public enum Fuel {

@@ -25,14 +25,13 @@ public class Header {
         return switch (item) {
             case LOGIN -> (T) new LoginPage(driver);
             case SIGN_UP -> (T) new RegistrationPage(driver);
-            case SEARCH, LOG_OUT, DELETE_ACCAUNT -> (T) new HomePage(driver);
+            case SEARCH, LOG_OUT -> (T) new HomePage(driver);
             case TERMS_OF_USE -> (T) new TermsOfUsePage(driver);
             case LET_THE_CAR_WORK -> (T) new LetTheCarWorkPage(driver);
-            default -> throw new IllegalArgumentException("Invalid parameter");
         };
     }
 
-    // click without opening a new page: click(LOG_OUT / DELETE_ACCAUNT) reloads HomePage right away
+    // click without opening a new page: click(LOG_OUT) reloads HomePage right away
     // and may interrupt what the site does after the click (request, confirmation dialog)
     public void clickWithoutNavigation(HeaderMenuItem item) {
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath(item.getLocator()))).click();

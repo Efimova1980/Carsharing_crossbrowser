@@ -1,0 +1,87 @@
+# Runs the tests on a GitHub runner and publishes the Allure report to GitHub Pages.
+# Started by hand only: Actions -> "Tests" -> Run workflow.
+# Repository secrets needed: BASE_URL, API_URL, LOGIN, PASSWORD.
+# Logs and screenshots are not published: they may contain the site address and the password.
+name: Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: What to run
+        type: choice
+        default: crossbrowser_regression_parallel
+        options:
+          - crossbrowser_regression_parallel     # smoke + regression, Chrome, Firefox, Edge in parallel
+          - crossbrowser_regression_sequential   # the same, browsers one after another (time comparison)
+          - crossbrowser_smoke                   # smoke, 3 browsers in parallel
+          - apitests                             # API tests, no browser
+          - all                                  # crossbrowser_regression_parallel + apitests
+
+permissions:
+  contents: read
+  pages: write      # publish the report
+  id-token: write   # required by deploy-pages
+
+# one run at a time: two runs would share the site test data and the Pages report
+concurrency:
+  group: tests
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      SUITE: ${{ inputs.suite }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      # the same Grid as on the server (docker-compose.yml), but on the runner itself: no tunnel
+      - name: Start Selenium Grid
+        if: env.SUITE != 'apitests'
+        run: |
+          docker compose up -d
+          timeout 180 bash -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 3; done'
+
+      # --continue: a failed task does not stop the next one; inside a task
+      # failed tests never stop the others. Known site bugs make this step red.
+      - name: Run tests
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+          API_URL: ${{ secrets.API_URL }}
+          LOGIN: ${{ secrets.LOGIN }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          if [ "$SUITE" = "all" ]; then tasks="crossbrowser_regression_parallel apitests"; else tasks="$SUITE"; fi
+          ./gradlew $tasks --continue \
+            -DgridUrl=http://localhost:4444 \
+            -DbaseUrl="$BASE_URL" -DapiUrl="$API_URL" \
+            -Dlogin="$LOGIN" -Dpassword="$PASSWORD"
+
+      # the report is built and published even if tests failed (but not if the run was cancelled)
+      - name: Build Allure report
+        if: ${{ !cancelled() }}
+        run: ./gradlew allureReport
+
+      - uses: actions/upload-pages-artifact@v3
+        if: ${{ !cancelled() }}
+        with:
+          path: build/reports/allure-report/allureReport
+
+      - id: deployment
+        if: ${{ !cancelled() }}
+        uses: actions/deploy-pages@v4
+
+      - name: Stop Selenium Grid
+        if: ${{ always() && env.SUITE != 'apitests' }}
+        run: docker compose down

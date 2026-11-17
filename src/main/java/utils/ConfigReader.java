@@ -9,7 +9,7 @@ import java.util.Properties;
  * <p>
  * Where a value comes from, highest priority first:
  * <ol>
- *     <li>JVM system property: {@code .\gradlew crossbrowser -Dbrowser=firefox}.
+ *     <li>JVM system property: {@code .\gradlew smoketests -Dbrowser=firefox}.
  *         Gradle passes to the tests only the keys listed in {@code configKeys} in build.gradle;</li>
  *     <li>config.properties (src/main/resources) - default values, file is ignored by git;</li>
  *     <li>defaultValue in {@link #get(String, String)}, if the key is not set anywhere.</li>

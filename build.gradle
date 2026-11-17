@@ -46,7 +46,7 @@ allure {
 }
 
 // settings passed to tests from the command line, e.g.
-// .\gradlew crossbrowser -DgridUrl=http://localhost:4444
+// .\gradlew crossbrowser_smoke -DgridUrl=http://localhost:4444
 def configKeys = ['browser', 'gridUrl', 'baseUrl', 'headless', 'login', 'password', 'apiUrl']
 
 tasks.withType(Test).configureEach {
@@ -83,15 +83,23 @@ tasks.register('regressiontests', Test) {
     }
 }
 
-tasks.register('crossbrowser', Test) {
+tasks.register('crossbrowser_smoke', Test) {
     useTestNG() {
-        suites 'src/test/resources/crossbrowser.xml'
+        suites 'src/test/resources/crossbrowser_smoke.xml'
     }
 }
 
-tasks.register('crossbrowser_regression', Test) {
+tasks.register('crossbrowser_regression_parallel', Test) {
     useTestNG() {
-        suites 'src/test/resources/crossbrowser_regression.xml'
+        suites 'src/test/resources/crossbrowser_regression_parallel.xml'
+    }
+}
+
+// the same as crossbrowser_regression_parallel, but browsers one after another (no parallel runs):
+// compare its time with crossbrowser_regression_parallel to see the gain from parallel runs
+tasks.register('crossbrowser_regression_sequential', Test) {
+    useTestNG() {
+        suites 'src/test/resources/crossbrowser_regression_sequential.xml'
     }
 }
 

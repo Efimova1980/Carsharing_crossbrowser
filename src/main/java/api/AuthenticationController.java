@@ -33,7 +33,7 @@ public class AuthenticationController extends BaseApi implements Endpoints {
         // a failed login is a broken precondition, not a product defect: Allure shows it as Broken
         if (response.statusCode() != 200) {
             throw new IllegalStateException(
-                    "Precondition failed: login as " + user.getUsername() + " returned " + response.statusCode());
+                    "Precondition failed: login as the existing user failed, status " + response.statusCode());
         }
         return "Bearer " + response.as(TokenDto.class).getAccessToken();
     }

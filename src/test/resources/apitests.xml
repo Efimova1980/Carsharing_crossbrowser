@@ -9,7 +9,9 @@
         <classes>
             <class name="api_tests.RegistrationApiTests"/>
             <class name="api_tests.LoginApiTests"/>
-            <class name="api_tests.CarControllerTests"/>
+            <class name="api_tests.SearchApiTests"/>
+            <class name="api_tests.AddCarApiTests"/>
+            <class name="api_tests.DeleteCarApiTests"/>
         </classes>
     </test>
 </suite>
