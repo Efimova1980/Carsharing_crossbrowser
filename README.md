@@ -114,6 +114,8 @@ The site address and the test user are passed from repository secrets
 (`BASE_URL`, `API_URL`, `LOGIN`, `PASSWORD`), so they are not in the code, the logs or the report.
 Logs and screenshots stay on the runner and are not published.
 
+A green run means the tests ran and the report is published; failed tests are in the report.
+
 ## Report
 
 **Latest report:** [Allure report of the last GitHub Actions run](https://efimova1980.github.io/Carsharing_crossbrowser/)

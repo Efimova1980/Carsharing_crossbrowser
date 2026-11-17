@@ -3,6 +3,8 @@
 # Repository secrets needed: BASE_URL, API_URL, LOGIN, PASSWORD.
 # Logs and screenshots are not published: they may contain the site address and the password.
 name: Tests
+# the run list shows what was run, e.g. "Tests: apitests"
+run-name: "Tests: ${{ inputs.suite }}"
 
 on:
   workflow_dispatch:
@@ -54,8 +56,9 @@ jobs:
           timeout 180 bash -c 'until curl -s http://localhost:4444/status | grep -q "\"ready\": *true"; do sleep 3; done'
 
       # --continue: a failed task does not stop the next one; inside a task
-      # failed tests never stop the others. Known site bugs make this step red.
+      # failed tests never stop the others.
       - name: Run tests
+        continue-on-error: true   # failed tests are shown in the Allure report; the run itself stays green
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           API_URL: ${{ secrets.API_URL }}
