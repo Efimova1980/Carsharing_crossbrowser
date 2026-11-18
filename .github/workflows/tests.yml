@@ -41,6 +41,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # the machine the tests run on: needed to compare parallel and sequential run times
+      - name: Runner info
+        run: |
+          echo "CPU cores: $(nproc)"
+          lscpu | grep "Model name"
+          free -h
+          df -h /
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

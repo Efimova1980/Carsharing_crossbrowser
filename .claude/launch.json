@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "saved-report-parallel",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "saved-reports/crossbrowser_regression_parallel"],
+      "port": 8765
+    }
+  ]
+}

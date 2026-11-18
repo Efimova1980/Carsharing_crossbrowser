@@ -23,6 +23,8 @@ src/test/resources/test_log
 ### Allure ###
 allure-results/
 allure-report/
+# reports downloaded from GitHub Pages to compare runs
+saved-reports/
 
 ### Eclipse ###
 .apt_generated
